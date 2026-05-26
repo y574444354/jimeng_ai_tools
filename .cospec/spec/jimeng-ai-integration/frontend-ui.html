@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>即梦AI - AI图片生成工具</title>
+<style>
+/* ===== Design Tokens (Element Plus 风格) ===== */
+:root {
+  /* 主色与功能色 */
+  --primary: #409EFF;
+  --primary-light: #66B1FF;
+  --primary-dark: #3A8EE6;
+  --primary-bg: #ECF5FF;
+  --success: #67C23A;
+  --warning: #E6A23C;
+  --danger: #F56C6C;
+  --info: #909399;
+
+  /* 背景层次 */
+  --bg-page: #F2F3F5;
+  --bg-content: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-hover: #F5F7FA;
+  --bg-menu: #304156;
+  --bg-menu-hover: #263445;
+  --bg-menu-active: #409EFF;
+
+  /* 文字层次 */
+  --text-primary: #303133;
+  --text-regular: #606266;
+  --text-secondary: #909399;
+  --text-placeholder: #C0C4CC;
+  --text-disabled: #C0C4CC;
+  --text-menu: #BFCDDB;
+  --text-menu-active: #FFFFFF;
+
+  /* 边框 */
+  --border-base: #DCDFE6;
+  --border-light: #E4E7ED;
+  --border-lighter: #EBEEF5;
+  --border-extra-light: #F2F6FC;
+
+  /* 间距 */
+  --sp-xs: 4px;
+  --sp-sm: 8px;
+  --sp-md: 12px;
+  --sp-lg: 16px;
+  --sp-xl: 24px;
+
+  /* 圆角 */
+  --radius-none: 0;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-round: 20px;
+
+  /* 阴影 */
+  --shadow-none: none;
+  --shadow-light: 0 2px 4px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.06);
+  --shadow-medium: 0 4px 12px rgba(0,0,0,.08);
+  --shadow-heavy: 0 8px 24px rgba(0,0,0,.12);
+
+  /* 布局 */
+  --sidebar-width: 220px;
+  --header-height: 56px;
+}
+
+/* ===== Reset & Base ===== */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-page);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Layout ===== */
+.app-container { display:flex; min-height:100vh; }
+
+/* ===== Sidebar ===== */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-menu);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 100;
+  transition: width 0.3s;
+}
+.sidebar.collapsed { width: 64px; }
+.sidebar-logo {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-lg);
+  gap: var(--sp-sm);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.sidebar-logo .logo-icon {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #409EFF, #66B1FF);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.sidebar-logo .logo-text {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+.sidebar.collapsed .logo-text { opacity: 0; width: 0; overflow: hidden; }
+.sidebar-menu { flex:1; padding: var(--sp-sm) 0; overflow-y: auto; }
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  padding: 12px var(--sp-lg);
+  color: var(--text-menu);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-decoration: none;
+  border-left: 3px solid transparent;
+}
+.menu-item:hover { background: var(--bg-menu-hover); color: var(--text-menu-active); }
+.menu-item.active {
+  background: var(--bg-menu-hover);
+  color: var(--text-menu-active);
+  border-left-color: var(--bg-menu-active);
+}
+.menu-item .menu-icon { font-size: 18px; width: 20px; text-align: center; flex-shrink: 0; }
+.sidebar.collapsed .menu-item { justify-content: center; padding: 12px 0; }
+.sidebar.collapsed .menu-item .menu-label { display: none; }
+.sidebar-toggle {
+  padding: var(--sp-md) var(--sp-lg);
+  border-top: 1px solid rgba(255,255,255,.08);
+  color: var(--text-menu);
+  cursor: pointer;
+  text-align: center;
+  font-size: 18px;
+  transition: color 0.2s;
+}
+.sidebar-toggle:hover { color: #fff; }
+
+/* ===== Main Content ===== */
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  transition: margin-left 0.3s;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.sidebar.collapsed + .main-content { margin-left: 64px; }
+
+/* ===== Header ===== */
+.header {
+  height: var(--header-height);
+  background: var(--bg-content);
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--sp-xl);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: var(--shadow-light);
+}
+.header-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+.header-actions { display: flex; align-items: center; gap: var(--sp-lg); }
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  display: inline-block;
+}
+.status-dot.offline { background: var(--danger); }
+
+/* ===== Page Content ===== */
+.page-content { padding: var(--sp-xl); flex:1; }
+
+/* ===== Page Section ===== */
+.page-section {
+  background: var(--bg-content);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-light);
+  padding: var(--sp-xl);
+  margin-bottom: var(--sp-xl);
+}
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--sp-lg);
+  padding-bottom: var(--sp-md);
+  border-bottom: 1px solid var(--border-lighter);
+}
+
+/* ===== Form Elements ===== */
+.form-group { margin-bottom: var(--sp-lg); }
+.form-label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-regular);
+  margin-bottom: var(--sp-sm);
+  font-weight: 500;
+}
+.form-label .required { color: var(--danger); margin-left: 2px; }
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-content);
+  transition: border-color 0.2s;
+  outline: none;
+  font-family: inherit;
+}
+.input:focus, .textarea:focus, .select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-bg);
+}
+.input:hover, .textarea:hover, .select:hover { border-color: var(--primary-light); }
+.textarea { resize: vertical; min-height: 80px; }
+.input-sm { padding: 6px 10px; font-size: 13px; }
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--sp-lg);
+}
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-sm);
+  padding: 9px 20px;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--bg-content);
+  color: var(--text-regular);
+  white-space: nowrap;
+  font-family: inherit;
+}
+.btn:hover { color: var(--primary); border-color: var(--primary); background: var(--primary-bg); }
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--primary-light); border-color: var(--primary-light); color: #fff; }
+.btn-primary:active { background: var(--primary-dark); }
+.btn-success { background: var(--success); border-color: var(--success); color: #fff; }
+.btn-success:hover { opacity: 0.85; color: #fff; }
+.btn-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn-danger:hover { opacity: 0.85; color: #fff; }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+.btn-lg { padding: 12px 28px; font-size: 16px; }
+.btn-block { width: 100%; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ===== Tag ===== */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.tag-primary { background: var(--primary-bg); color: var(--primary); }
+.tag-success { background: #F0F9EB; color: var(--success); }
+.tag-warning { background: #FDF6EC; color: var(--warning); }
+.tag-danger { background: #FEF0F0; color: var(--danger); }
+
+/* ===== Slider ===== */
+.slider-container { display: flex; align-items: center; gap: var(--sp-md); }
+.slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--border-lighter);
+  border-radius: 2px;
+  outline: none;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: var(--shadow-light);
+}
+.slider-value { min-width: 32px; text-align: center; font-size: 13px; color: var(--text-regular); font-weight: 500; }
+
+/* ===== Image Upload ===== */
+.upload-area {
+  border: 2px dashed var(--border-base);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-xl);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--bg-page);
+}
+.upload-area:hover { border-color: var(--primary); background: var(--primary-bg); }
+.upload-area .upload-icon { font-size: 36px; color: var(--text-placeholder); margin-bottom: var(--sp-sm); }
+.upload-area .upload-text { color: var(--text-secondary); font-size: 13px; }
+.upload-area .upload-hint { color: var(--text-placeholder); font-size: 12px; margin-top: var(--sp-xs); }
+.upload-preview {
+  position: relative;
+  display: inline-block;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.upload-preview img { max-width: 200px; max-height: 200px; display: block; }
+.upload-preview .remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0,0,0,.5);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== Canvas (Inpaint) ===== */
+.canvas-container {
+  position: relative;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #f0f0f0;
+}
+.canvas-container canvas { display: block; max-width: 100%; }
+.canvas-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: var(--sp-sm) var(--sp-md);
+  background: var(--bg-page);
+  border-bottom: 1px solid var(--border-light);
+}
+.tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  background: var(--bg-content);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-regular);
+  transition: all 0.2s;
+}
+.tool-btn:hover { border-color: var(--primary); color: var(--primary); }
+.tool-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+/* ===== Style Grid ===== */
+.style-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: var(--sp-sm);
+}
+.style-item {
+  padding: 8px 4px;
+  text-align: center;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 12px;
+  color: var(--text-regular);
+}
+.style-item:hover { border-color: var(--primary); color: var(--primary); }
+.style-item.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+.style-item .style-icon { font-size: 24px; display: block; margin-bottom: 4px; }
+
+/* ===== Size Chip ===== */
+.size-chips { display: flex; flex-wrap: wrap; gap: var(--sp-sm); }
+.size-chip {
+  padding: 6px 14px;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-round);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-regular);
+  transition: all 0.2s;
+  background: var(--bg-content);
+}
+.size-chip:hover { border-color: var(--primary); color: var(--primary); }
+.size-chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+.size-chip.custom { border-style: dashed; }
+
+/* ===== Result Cards ===== */
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--sp-lg);
+}
+.result-card {
+  border: 1px solid var(--border-lighter);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.result-card:hover { box-shadow: var(--shadow-medium); transform: translateY(-2px); }
+.result-card img { width: 100%; height: 200px; object-fit: cover; display: block; }
+.result-card .card-footer {
+  padding: var(--sp-sm) var(--sp-md);
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-content);
+}
+
+/* ===== History List ===== */
+.history-list { }
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-lg);
+  padding: var(--sp-md) var(--sp-lg);
+  border-bottom: 1px solid var(--border-lighter);
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.history-item:last-child { border-bottom: none; }
+.history-item:hover { background: var(--bg-hover); }
+.history-thumb {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-md);
+  background: var(--bg-page);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.history-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.history-info { flex: 1; min-width: 0; }
+.history-info .hi-prompt {
+  font-size: 14px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 4px;
+}
+.history-info .hi-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  gap: var(--sp-md);
+}
+.history-info .hi-meta span { display: flex; align-items: center; gap: 4px; }
+.history-actions { display: flex; gap: var(--sp-sm); flex-shrink: 0; }
+
+/* ===== Modal / Dialog ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,.4);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: var(--bg-content);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-heavy);
+  width: 90%;
+  max-width: 520px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--sp-lg) var(--sp-xl);
+  border-bottom: 1px solid var(--border-lighter);
+}
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-close {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border: none; background: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+.modal-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+.modal-body { padding: var(--sp-xl); }
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-sm);
+  padding: var(--sp-lg) var(--sp-xl);
+  border-top: 1px solid var(--border-lighter);
+}
+
+/* ===== Loading ===== */
+.loading-overlay {
+  display: none;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,.7);
+  z-index: 10;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: var(--sp-md);
+  border-radius: var(--radius-lg);
+}
+.loading-overlay.show { display: flex; }
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border-lighter);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 13px; color: var(--text-secondary); }
+
+/* ===== States ===== */
+.empty-state {
+  text-align: center;
+  padding: var(--sp-xl) 0;
+  color: var(--text-secondary);
+}
+.empty-state .empty-icon { font-size: 48px; color: var(--text-placeholder); margin-bottom: var(--sp-md); }
+.empty-state .empty-text { font-size: 14px; }
+
+/* ===== Tabs ===== */
+.tabs { display: flex; border-bottom: 1px solid var(--border-lighter); margin-bottom: var(--sp-lg); }
+.tab-item {
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.tab-item:hover { color: var(--text-primary); }
+.tab-item.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+/* ===== Hidden Pages ===== */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: var(--border-base); border-radius: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  :root { --sidebar-width: 64px; }
+  .sidebar:not(.expanded) .menu-label { display: none; }
+  .sidebar:not(.expanded) .logo-text { display: none; }
+  .sidebar:not(.expanded) .menu-item { justify-content: center; padding: 12px 0; }
+  .page-content { padding: var(--sp-md); }
+  .form-row { grid-template-columns: 1fr; }
+  .result-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
+
+/* ===== Utility ===== */
+.mt-sm { margin-top: var(--sp-sm); }
+.mt-md { margin-top: var(--sp-md); }
+.mt-lg { margin-top: var(--sp-lg); }
+.flex { display: flex; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.gap-md { gap: var(--sp-md); }
+.gap-sm { gap: var(--sp-sm); }
+.text-center { text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- ===== Sidebar ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">✨</div>
+      <span class="logo-text">即梦AI</span>
+    </div>
+    <nav class="sidebar-menu">
+      <div class="menu-item active" data-page="text2img" onclick="switchPage('text2img')">
+        <span class="menu-icon">🎨</span>
+        <span class="menu-label">文生图</span>
+      </div>
+      <div class="menu-item" data-page="img2img" onclick="switchPage('img2img')">
+        <span class="menu-icon">🖼️</span>
+        <span class="menu-label">图生图</span>
+      </div>
+      <div class="menu-item" data-page="inpaint" onclick="switchPage('inpaint')">
+        <span class="menu-icon">✏️</span>
+        <span class="menu-label">局部重绘</span>
+      </div>
+      <div class="menu-item" data-page="history" onclick="switchPage('history')">
+        <span class="menu-icon">📋</span>
+        <span class="menu-label">生成记录</span>
+      </div>
+    </nav>
+    <div class="sidebar-toggle" onclick="toggleSidebar()">◀</div>
+  </aside>
+
+  <!-- ===== Main ===== -->
+  <div class="main-content">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-title" id="headerTitle">文生图</div>
+      <div class="header-actions">
+        <div class="header-status">
+          <span class="status-dot"></span>
+          <span>API 已连接</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="page-content">
+
+      <!-- ============================================================ -->
+      <!-- PAGE: 文生图 -->
+      <!-- ============================================================ -->
+      <div class="page active" id="page-text2img">
+        <div class="page-section">
+          <div class="section-title">生成参数</div>
+
+          <div class="form-group">
+            <label class="form-label">正向提示词 <span class="required">*</span></label>
+            <textarea class="textarea" placeholder="描述你想要的图片内容，支持中文和英文..." rows="3"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">负面提示词</label>
+            <textarea class="textarea" placeholder="描述你不希望出现在图片中的内容（可选）..." rows="2" style="min-height:50px;"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">图片尺寸</label>
+              <div class="size-chips">
+                <div class="size-chip active" onclick="selectSize(this, '1024x1024')">1:1 (1024×1024)</div>
+                <div class="size-chip" onclick="selectSize(this, '1920x1080')">16:9 (1920×1080)</div>
+                <div class="size-chip" onclick="selectSize(this, '1080x1920')">9:16 (1080×1920)</div>
+                <div class="size-chip" onclick="selectSize(this, '1440x1080')">4:3 (1440×1080)</div>
+                <div class="size-chip custom" onclick="showCustomSize()">✏️ 自定义</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">生成数量</label>
+              <select class="select">
+                <option>1 张</option>
+                <option selected>2 张</option>
+                <option>3 张</option>
+                <option>4 张</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">图片风格</label>
+            <div class="style-grid" id="styleGrid">
+              <div class="style-item active" onclick="selectStyle(this)"><span class="style-icon">🌄</span>通用</div>
+              <div class="style-item" onclick="selectStyle(this)"><span class="style-icon">📷</span>写实摄影</div>
+              <div class="style-item" onclick="selectStyle(this)"><span class="style-icon">🎭</span>动漫</div>
+              <div class="style-item" onclick="selectStyle(this)"><span class="style-icon">🎨</span>水彩</div>
+              <div class="style-item" onclick="selectStyle(this)"><span class="style-icon">🖌️</span>油画</div>
+              <div class="style-item" onclick="selectStyle(this)"><span class="style-icon">✨</span>3D渲染</div>
+              <div class="style-item" onclick="selectStyle(this)"><span class="style-icon">🌿</span>国风</div>
+              <div class="style-item" onclick="selectStyle(this)"><span class="style-icon">🌙</span>赛博朋克</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">CFG Scale（提示词相关性）</label>
+              <div class="slider-container">
+                <input type="range" class="slider" min="1" max="20" value="7" step="0.5" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="slider-value">7</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">随机种子 (Seed)</label>
+              <input class="input input-sm" type="number" placeholder="0 = 随机" value="0">
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-lg btn-block mt-md" onclick="startGeneration()">
+            ✨ 生成图片
+          </button>
+
+          <div class="page-section mt-lg" style="position:relative;">
+            <div class="loading-overlay" id="loading-text2img">
+              <div class="spinner"></div>
+              <div class="loading-text">正在生成图片，请稍候...</div>
+            </div>
+            <div class="section-title flex-between">
+              <span>生成结果</span>
+              <span class="tag tag-info" style="font-size:12px;color:var(--text-secondary);">还未生成</span>
+            </div>
+            <div class="empty-state" id="result-empty">
+              <div class="empty-icon">🎨</div>
+              <div class="empty-text">输入提示词，点击"生成图片"开始创作</div>
+            </div>
+            <div class="result-grid" id="result-grid-t2i" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- PAGE: 图生图 -->
+      <!-- ============================================================ -->
+      <div class="page" id="page-img2img">
+        <div class="page-section">
+          <div class="section-title">参考图片</div>
+          <div class="upload-area" id="uploadArea-img2img" onclick="document.getElementById('fileInput-img2img').click()">
+            <div class="upload-icon">📤</div>
+            <div class="upload-text">点击上传参考图片</div>
+            <div class="upload-hint">支持 JPG / PNG 格式，单文件不超过 20MB</div>
+          </div>
+          <input type="file" id="fileInput-img2img" accept="image/jpeg,image/png" style="display:none" onchange="previewImage(this, 'uploadArea-img2img')">
+          <div id="preview-img2img" style="display:none;margin-top:var(--sp-md);"></div>
+
+          <div class="section-title mt-lg">生成参数</div>
+          <div class="form-group">
+            <label class="form-label">正向提示词 <span class="required">*</span></label>
+            <textarea class="textarea" placeholder="描述你想要的图片内容..." rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">负面提示词</label>
+            <textarea class="textarea" placeholder="不希望出现的内容..." rows="2" style="min-height:50px;"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">图片尺寸</label>
+              <div class="size-chips">
+                <div class="size-chip active" onclick="selectSize(this, '1024x1024')">1:1</div>
+                <div class="size-chip" onclick="selectSize(this, '1920x1080')">16:9</div>
+                <div class="size-chip" onclick="selectSize(this, '1080x1920')">9:16</div>
+                <div class="size-chip" onclick="selectSize(this, '1440x1080')">4:3</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">生成数量</label>
+              <select class="select">
+                <option>1 张</option>
+                <option selected>2 张</option>
+                <option>3 张</option>
+                <option>4 张</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">图片风格</label>
+            <div class="style-grid">
+              <div class="style-item active" onclick="selectStyle(this)"><span class="style-icon">🌄</span>通用</div>
+              <div class="style-item" onclick="selectStyle(this)"><span class="style-icon">📷</span>写实摄影</div>
+              <div class="style-item" onclick="selectStyle(this)"><span class="style-icon">🎭</span>动漫</div>
+              <div class="style-item" onclick="selectStyle(this)"><span class="style-icon">🎨</span>水彩</div>
+              <div class="style-item" onclick="selectStyle(this)"><span class="style-icon">✨</span>3D渲染</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">CFG Scale</label>
+              <div class="slider-container">
+                <input type="range" class="slider" min="1" max="20" value="7" step="0.5" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="slider-value">7</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Seed</label>
+              <input class="input input-sm" type="number" placeholder="0 = 随机" value="0">
+            </div>
+          </div>
+          <button class="btn btn-primary btn-lg btn-block mt-md" onclick="alert('图生图任务已提交，正在生成中...')">
+            🖼️ 以图生图
+          </button>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- PAGE: 局部重绘 -->
+      <!-- ============================================================ -->
+      <div class="page" id="page-inpaint">
+        <div class="page-section">
+          <div class="section-title">上传图片</div>
+          <div class="upload-area" id="uploadArea-inpaint" onclick="document.getElementById('fileInput-inpaint').click()">
+            <div class="upload-icon">🖼️</div>
+            <div class="upload-text">点击上传需要编辑的图片</div>
+            <div class="upload-hint">支持 JPG / PNG 格式</div>
+          </div>
+          <input type="file" id="fileInput-inpaint" accept="image/jpeg,image/png" style="display:none" onchange="previewInpaintImage(this)">
+          <div id="preview-inpaint" style="display:none;margin-top:var(--sp-md);"></div>
+
+          <div class="section-title mt-lg" id="inpaintCanvasSection" style="display:none;">
+            <div class="flex-between">
+              <span>标记重绘区域</span>
+              <span style="font-size:12px;color:var(--text-secondary);">使用画笔标记您想要修改的区域</span>
+            </div>
+            <div class="canvas-toolbar mt-sm">
+              <button class="tool-btn active" id="brushBtn" onclick="setTool('brush')">🖊️ 画笔</button>
+              <button class="tool-btn" id="eraserBtn" onclick="setTool('eraser')">🧹 橡皮擦</button>
+              <span style="color:var(--text-secondary);font-size:13px;margin:0 8px;">|</span>
+              <span style="font-size:13px;color:var(--text-regular);">画笔大小:</span>
+              <input type="range" min="5" max="50" value="20" style="width:80px;" oninput="brushSize=this.value; document.getElementById('sizeLabel').textContent=this.value">
+              <span id="sizeLabel" style="font-size:12px;color:var(--text-secondary);">20</span>
+              <button class="tool-btn" style="margin-left:auto;" onclick="clearCanvas()">🗑️ 清除</button>
+            </div>
+            <div class="canvas-container">
+              <canvas id="inpaintCanvas"></canvas>
+            </div>
+          </div>
+
+          <div class="section-title mt-lg">重绘提示词</div>
+          <div class="form-group">
+            <label class="form-label">描述想要修改后的效果 <span class="required">*</span></label>
+            <textarea class="textarea" placeholder="例如：把这片区域改成远处的山脉..." rows="2"></textarea>
+          </div>
+          <button class="btn btn-primary btn-lg btn-block mt-md" onclick="alert('局部重绘任务已提交，正在生成中...')">
+            ✏️ 开始重绘
+          </button>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- PAGE: 历史记录 -->
+      <!-- ============================================================ -->
+      <div class="page" id="page-history">
+        <div class="page-section">
+          <div class="section-title flex-between">
+            <span>生成记录</span>
+            <div class="flex gap-sm">
+              <button class="btn btn-sm" onclick="alert('已刷新')">🔄 刷新</button>
+              <button class="btn btn-sm btn-danger" onclick="showDeleteConfirm()">🗑️ 清空记录</button>
+            </div>
+          </div>
+
+          <div class="history-list">
+            <div class="history-item" onclick="showHistoryDetail(this)">
+              <div class="history-thumb">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' fill='%23E4E7ED'/%3E%3Ctext x='30' y='35' text-anchor='middle' fill='%23909399' font-size='20'%3E🌄%3C/text%3E%3C/svg%3E" alt="thumb">
+              </div>
+              <div class="history-info">
+                <div class="hi-prompt">一只站在山顶的狼，背景是日出，写实风格</div>
+                <div class="hi-meta">
+                  <span>📅 2025-06-26 14:32</span>
+                  <span>🎨 文生图</span>
+                  <span>📐 1024×1024</span>
+                </div>
+              </div>
+              <div class="history-actions">
+                <button class="btn btn-sm" onclick="event.stopPropagation();alert('重新生成')">🔄 重试</button>
+                <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteHistoryItem(this)">🗑️</button>
+              </div>
+            </div>
+
+            <div class="history-item" onclick="showHistoryDetail(this)">
+              <div class="history-thumb">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' fill='%23E4E7ED'/%3E%3Ctext x='30' y='35' text-anchor='middle' fill='%23909399' font-size='20'%3E🌊%3C/text%3E%3C/svg%3E" alt="thumb">
+              </div>
+              <div class="history-info">
+                <div class="hi-prompt">海边日落，动漫风格，水面有倒影</div>
+                <div class="hi-meta">
+                  <span>📅 2025-06-26 13:15</span>
+                  <span>🎨 文生图</span>
+                  <span>📐 1920×1080</span>
+                </div>
+              </div>
+              <div class="history-actions">
+                <button class="btn btn-sm" onclick="event.stopPropagation();alert('重新生成')">🔄 重试</button>
+                <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteHistoryItem(this)">🗑️</button>
+              </div>
+            </div>
+
+            <div class="history-item" onclick="showHistoryDetail(this)">
+              <div class="history-thumb">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' fill='%23E4E7ED'/%3E%3Ctext x='30' y='35' text-anchor='middle' fill='%23909399' font-size='20'%3E🐱%3C/text%3E%3C/svg%3E" alt="thumb">
+              </div>
+              <div class="history-info">
+                <div class="hi-prompt">一只可爱的橘猫，水彩风格</div>
+                <div class="hi-meta">
+                  <span>📅 2025-06-25 20:08</span>
+                  <span>🎨 图生图</span>
+                  <span>📐 1024×1024</span>
+                </div>
+              </div>
+              <div class="history-actions">
+                <button class="btn btn-sm" onclick="event.stopPropagation();alert('重新生成')">🔄 重试</button>
+                <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteHistoryItem(this)">🗑️</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="empty-state" id="historyEmpty" style="display:none;">
+            <div class="empty-icon">📭</div>
+            <div class="empty-text">暂无生成记录，开始创作吧！</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-container -->
+
+<!-- ===== Detail Modal ===== -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box" style="max-width:650px;">
+    <div class="modal-header">
+      <span class="modal-title">生成详情</span>
+      <button class="modal-close" onclick="closeModal('detailModal')">×</button>
+    </div>
+    <div class="modal-body" id="detailBody">
+      <div style="text-align:center;margin-bottom:var(--sp-lg);">
+        <img src="" id="detailImage" style="max-width:100%;max-height:300px;border-radius:var(--radius-md);background:var(--bg-page);">
+      </div>
+      <div class="form-row">
+        <div><strong>提示词：</strong><span id="detailPrompt"></span></div>
+        <div><strong>类型：</strong><span id="detailType"></span></div>
+        <div><strong>尺寸：</strong><span id="detailSize"></span></div>
+        <div><strong>风格：</strong><span id="detailStyle"></span></div>
+        <div><strong>Seed：</strong><span id="detailSeed"></span></div>
+        <div><strong>CFG Scale：</strong><span id="detailCfg"></span></div>
+        <div><strong>生成时间：</strong><span id="detailTime"></span></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('detailModal')">关闭</button>
+      <button class="btn btn-primary" onclick="alert('已复制到历史记录')">复制此参数</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Delete Confirm Modal ===== -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box" style="max-width:400px;">
+    <div class="modal-header">
+      <span class="modal-title">确认删除</span>
+      <button class="modal-close" onclick="closeModal('deleteModal')">×</button>
+    </div>
+    <div class="modal-body text-center">
+      <div style="font-size:40px;margin-bottom:var(--sp-md);">🗑️</div>
+      <p style="color:var(--text-regular);">确定要删除所有历史生成记录吗？<br>此操作不可恢复。</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('deleteModal')">取消</button>
+      <button class="btn btn-danger" onclick="closeModal('deleteModal');alert('已清空所有历史记录')">确定删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Custom Size Modal ===== -->
+<div class="modal-overlay" id="customSizeModal">
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-header">
+      <span class="modal-title">自定义尺寸</span>
+      <button class="modal-close" onclick="closeModal('customSizeModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">宽度 (px)</label>
+          <input class="input input-sm" type="number" value="1024" min="256" max="4096">
+        </div>
+        <div class="form-group">
+          <label class="form-label">高度 (px)</label>
+          <input class="input input-sm" type="number" value="1024" min="256" max="4096">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('customSizeModal')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('customSizeModal');alert('已设置自定义尺寸')">确认</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== Page Routing =====
+let currentPage = 'text2img';
+const pageTitles = {
+  text2img: '文生图',
+  img2img: '图生图',
+  inpaint: '局部重绘',
+  history: '生成记录'
+};
+
+function switchPage(pageId) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // Show target page
+  document.getElementById('page-' + pageId).classList.add('active');
+  // Update menu active state
+  document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+  document.querySelector(`.menu-item[data-page="${pageId}"]`).classList.add('active');
+  // Update header title
+  document.getElementById('headerTitle').textContent = pageTitles[pageId];
+  currentPage = pageId;
+}
+
+// ===== Sidebar Toggle =====
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+// ===== Size Chips =====
+function selectSize(el, size) {
+  el.parentElement.querySelectorAll('.size-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+function showCustomSize() {
+  document.getElementById('customSizeModal').classList.add('show');
+}
+
+// ===== Style Grid =====
+function selectStyle(el) {
+  el.parentElement.querySelectorAll('.style-item').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ===== Modal =====
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+// ===== Image Upload (img2img) =====
+function previewImage(input, uploadAreaId) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const area = document.getElementById(uploadAreaId);
+    area.style.display = 'none';
+    const preview = document.getElementById('preview-' + uploadAreaId.replace('uploadArea-', ''));
+    preview.style.display = 'block';
+    preview.innerHTML = '<div class="upload-preview"><img src="' + e.target.result + '" alt="preview"><button class="remove-btn" onclick="removeImage(this)">×</button></div>';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage(btn) {
+  const preview = btn.closest('.upload-preview').parentElement;
+  preview.style.display = 'none';
+  preview.innerHTML = '';
+  const areaId = preview.id.replace('preview-', 'uploadArea-');
+  document.getElementById(areaId).style.display = 'block';
+}
+
+// ===== Canvas (Inpaint) =====
+let canvas, ctx;
+let isDrawing = false;
+let brushSize = 20;
+let currentTool = 'brush';
+let canvasInitialized = false;
+
+function previewInpaintImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const maxW = 500;
+      const scale = img.width > maxW ? maxW / img.width : 1;
+      const w = img.width * scale;
+      const h = img.height * scale;
+
+      canvas = document.getElementById('inpaintCanvas');
+      canvas.width = w;
+      canvas.height = h;
+      ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+
+      document.getElementById('uploadArea-inpaint').style.display = 'none';
+      document.getElementById('preview-inpaint').style.display = 'block';
+      document.getElementById('inpaintCanvasSection').style.display = 'block';
+
+      initCanvasEvents();
+      canvasInitialized = true;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function initCanvasEvents() {
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', stopDraw);
+  canvas.addEventListener('mouseleave', stopDraw);
+
+  // Touch support
+  canvas.addEventListener('touchstart', function(e) { e.preventDefault(); const rect = canvas.getBoundingClientRect(); startDraw({offsetX: e.touches[0].clientX - rect.left, offsetY: e.touches[0].clientY - rect.top}); });
+  canvas.addEventListener('touchmove', function(e) { e.preventDefault(); const rect = canvas.getBoundingClientRect(); draw({offsetX: e.touches[0].clientX - rect.left, offsetY: e.touches[0].clientY - rect.top}); });
+  canvas.addEventListener('touchend', stopDraw);
+
+  // Show cursor in brush mode
+  function startDraw(e) {
+    isDrawing = true;
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+    if (currentTool === 'brush') {
+      ctx.arc(e.offsetX, e.offsetY, brushSize/2, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(64, 158, 255, 0.6)';
+      ctx.fill();
+    }
+  }
+
+  function draw(e) {
+    if (!isDrawing) return;
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (currentTool === 'brush') {
+      ctx.strokeStyle = 'rgba(64, 158, 255, 0.6)';
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+    } else {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      ctx.globalCompositeOperation = 'source-over';
+    }
+  }
+
+  function stopDraw() {
+    isDrawing = false;
+    ctx.closePath();
+  }
+}
+
+function setTool(tool) {
+  currentTool = tool;
+  document.getElementById('brushBtn').classList.toggle('active', tool === 'brush');
+  document.getElementById('eraserBtn').classList.toggle('active', tool === 'eraser');
+  canvas.style.cursor = tool === 'brush' ? 'crosshair' : 'cell';
+}
+
+function clearCanvas() {
+  if (canvas && ctx && canvasInitialized) {
+    // Redraw original image portion only (need to store original)
+    // For demo, just clear the blue marks
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < imgData.data.length; i += 4) {
+      // Remove blue overlay
+      if (imgData.data[i+3] < 255) {
+        imgData.data[i+3] = 0;
+      }
+    }
+    // Simplified: just reload the original (in real world, store original)
+    alert('清除画笔标记（演示效果）');
+    location.reload();
+  }
+}
+
+// ===== Generation =====
+function startGeneration() {
+  const loading = document.getElementById('loading-text2img');
+  const empty = document.getElementById('result-empty');
+  const grid = document.getElementById('result-grid-t2i');
+
+  loading.classList.add('show');
+  empty.style.display = 'none';
+
+  // Simulate generation
+  setTimeout(function() {
+    loading.classList.remove('show');
+    grid.style.display = 'grid';
+
+    const sampleImgs = [
+      'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'200\' viewBox=\'0 0 200 200\'%3E%3Crect width=\'200\' height=\'200\' fill=\'%23ECF5FF\'/%3E%3Ctext x=\'100\' y=\'110\' text-anchor=\'middle\' fill=\'%23409EFF\' font-size=\'40\'%3E🌄%3C/text%3E%3C/svg%3E',
+      'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'200\' viewBox=\'0 0 200 200\'%3E%3Crect width=\'200\' height=\'200\' fill=\'%23F0F9EB\'/%3E%3Ctext x=\'100\' y=\'110\' text-anchor=\'middle\' fill=\'%2367C23A\' font-size=\'40\'%3E🌊%3C/text%3E%3C/svg%3E'
+    ];
+    grid.innerHTML = sampleImgs.map((src, i) =>
+      '<div class="result-card" onclick="alert(\'查看大图\')">' +
+      '<img src="' + src + '" alt="生成结果 ' + (i+1) + '">' +
+      '<div class="card-footer"><span>生成结果 ' + (i+1) + '</span><span class="tag tag-success">已完成</span></div></div>'
+    ).join('');
+  }, 2000);
+}
+
+// ===== History =====
+function showHistoryDetail(el) {
+  const modal = document.getElementById('detailModal');
+  document.getElementById('detailImage').src = el.querySelector('.history-thumb img').src;
+  document.getElementById('detailPrompt').textContent = el.querySelector('.hi-prompt').textContent;
+  const metas = el.querySelectorAll('.hi-meta span');
+  document.getElementById('detailType').textContent = metas[1] ? metas[1].textContent.replace('🎨 ', '') : '';
+  document.getElementById('detailSize').textContent = metas[2] ? metas[2].textContent.replace('📐 ', '') : '';
+  document.getElementById('detailStyle').textContent = '写实';
+  document.getElementById('detailSeed').textContent = '12345';
+  document.getElementById('detailCfg').textContent = '7.0';
+  document.getElementById('detailTime').textContent = metas[0] ? metas[0].textContent.replace('📅 ', '') : '';
+  modal.classList.add('show');
+}
+
+function deleteHistoryItem(btn) {
+  const item = btn.closest('.history-item');
+  item.style.transition = 'all 0.3s';
+  item.style.opacity = '0';
+  item.style.transform = 'translateX(30px)';
+  setTimeout(function() { item.remove(); }, 300);
+}
+
+function showDeleteConfirm() {
+  document.getElementById('deleteModal').classList.add('show');
+}
+
+// ===== Close modals on overlay click =====
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('show');
+  });
+});
+
+// ===== Demo: Show loading state on other generate buttons =====
+document.querySelectorAll('.btn-primary.btn-lg.btn-block').forEach(btn => {
+  if (btn.textContent.includes('以图生图') || btn.textContent.includes('开始重绘')) {
+    const orig = btn.onclick;
+    btn.onclick = function(e) {
+      btn.disabled = true;
+      btn.textContent = '⏳ 处理中...';
+      setTimeout(function() {
+        btn.disabled = false;
+        btn.textContent = btn.textContent.includes('以图') ? '🖼️ 以图生图' : '✏️ 开始重绘';
+        alert('生成完成！图片已保存到本地');
+      }, 2500);
+    };
+  }
+});
+</script>
+</body>
+</html>

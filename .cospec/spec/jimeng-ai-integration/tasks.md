@@ -1,0 +1,252 @@
+# 开发计划
+
+## 全局规则
+
+### 核心文档
+- 系统需求文档：`.cospec/spec/jimeng-ai-integration/requirement.md`
+- 整体技术方案：`.cospec/spec/jimeng-ai-integration/tech.md` — 并参考 `.cospec/architecture/design.md` 获取完整设计信息（目录结构、技术栈、数据模型、集成方式等）
+- 前端UI设计：`.cospec/spec/jimeng-ai-integration/frontend-ui.html`
+
+### 执行指导
+
+1. **与设计文档对齐**：
+   - 所有实现细节（目录结构、技术栈、依赖引入、API定义、数据模型、集成方式、配置项等）必须与 `design.md` 和 `tech.md` 严格一致，不得擅自修改、简化或替代。
+   - 前端实现以需求文档为功能完整性基准，UI稿为视觉风格与交互范式参考；须复现 `frontend-ui.html` 呈现的整体布局、配色风格、交互流程及核心页面结构，允许按 Vue 3 + Element Plus 技术栈做合理调整；UI稿未展示的非核心页面、同类组件重复实例、列表完整状态等，须依据需求文档补全，不得擅自删减页面或改变核心交互逻辑。
+
+2. **编码约束**：
+   - 后端：Python 3.11+、FastAPI、SQLAlchemy、Pydantic、volcengine-python-sdk。
+   - 前端：Vue 3 + TypeScript + Vite + Element Plus + Pinia + Axios。
+   - 数据库：SQLite 本地文件 `./data/jimeng-ai.db`。
+   - 图片存储：`./output/YYYYMMDD/{task_id}_{index}.png` 格式。
+   - API统一前缀 `/api/v1/`，统一返回格式 `{"code": 0, "message": "success", "data": {...}}`。
+   - AK/SK 信息存储在 `.env` 文件中（`VOLC_ACCESS_KEY`、`VOLC_SECRET_KEY`），禁止硬编码在代码中，禁止在日志中记录明文AK/SK。
+   - 前期功能开发阶段先快速完成所有核心代码文件的编写，语法错误、类型错误等静态问题可以暂缓，放到最后收尾阶段集中修复；收尾阶段务必确保代码通过静态语法检查，无语法层面的错误。
+
+3. **项目启动**：
+   - 启动前确认依赖是否可用。若可用，正常启动并验证；若不可用，修复代码问题（配置错误、端口占用等），确认是外部环境问题时才跳过并说明。
+   - 如果目标端口被占用，先清理端口占用程序，再启动服务。
+
+4. **测试验证**：
+   - 如果 `playwright` MCP 可用，优先使用它进行UI测试。不可用时，降级为通过命令或脚本进行测试。
+
+---
+
+## 任务列表
+
+### 阶段 1：项目初始化
+
+**目的**：创建前后端项目结构、安装基础依赖、配置脚手架文件。
+
+- [x] T001 创建 `jimeng-ai-webapp/` 项目根目录及前后端子目录结构（按 `design.md` 2.1.3 项目目录结构）
+- [x] T002 在 `backend/` 中初始化 Python 项目：创建 `requirements.txt`（FastAPI、uvicorn、SQLAlchemy、Pydantic、volcengine-python-sdk、python-dotenv、uuid 等），创建 `backend/.env` 模板文件
+- [x] T003 在 `frontend/` 中用 Vite 初始化 Vue 3 + TypeScript 项目，安装依赖（Element Plus、Pinia、Axios、Vue Router），创建 `package.json`
+- [x] T004 创建 `.gitignore`（忽略 `node_modules/`、`__pycache__/`、`.env`、`output/`、`data/`、`logs/`）
+- [x] T005 创建 `README.md`（项目说明、技术栈、快速启动指南、环境变量说明）
+
+---
+
+### 阶段 2：搭建基础设施
+
+**目的**：在实现任何用户故事之前必须完成的核心基础设施，包括数据库、API路由框架、配置管理、日志、即梦AI SDK集成。
+
+**⚠️ 关键**：在此阶段完成前，不得开始任何用户故事工作。
+
+- [x] T006 在 `backend/app/core/config.py` 中实现环境配置管理（读取 `.env` 中的 `VOLC_ACCESS_KEY`、`VOLC_SECRET_KEY`，校验完整性）
+- [x] T007 在 `backend/app/core/logging.py` 中配置日志基础设施（Python logging，输出到控制台 + `./logs/app.log`，禁止输出AK/SK）
+- [x] T008 在 `backend/app/core/exceptions.py` 中定义统一异常处理（业务异常、API异常等）
+- [x] T009 在 `backend/app/api/v1/__init__.py` 中搭建API路由注册框架（统一前缀 `/api/v1/`，统一响应格式中间件）
+- [x] T010 在 `backend/app/models/__init__.py` 中初始化 SQLAlchemy 数据库引擎和会话工厂，连接 `./data/jimeng-ai.db`
+- [x] T011 在 `backend/app/models/generation_record.py` 中创建 `GenerationRecord` 模型（字段按 design.md 4.2.1 表定义）
+- [x] T012 在 `backend/app/models/generated_image.py` 中创建 `GeneratedImage` 模型（字段按 design.md 4.2.2 表定义）
+- [x] T013 在 `backend/app/schemas/generation.py` 中创建 Pydantic 请求/响应模型（GenerationCreate、GenerationResponse、GenerationStatus、PageResponse 等）
+- [x] T014 在 `backend/app/schemas/common.py` 中创建统一API响应模型（`ApiResponse`、`PageResponse`）
+- [x] T015 [P] 在 `backend/app/integration/jimeng_client.py` 中实现即梦AI API客户端（封装 volcengine-python-sdk，支持HMAC-SHA256鉴权、文生图/图生图/局部重绘API调用、任务状态轮询）
+- [x] T016 在 `backend/main.py` 中创建 FastAPI 应用启动入口（注册路由、CORS中间件、启动时校验AK/SK）
+- [x] T017 在 `frontend/src/api/request.ts` 中封装 Axios 实例（统一baseURL、请求/响应拦截、错误处理）
+- [x] T018 在 `frontend/src/router/index.ts` 中配置前端路由（文生图 `/text2img`、图生图 `/img2img`、局部重绘 `/inpaint`、历史记录 `/history`）
+- [x] T019 在 `frontend/src/layouts/MainLayout.vue` 中实现主布局（侧栏导航+顶栏+内容区，侧栏折叠功能）
+- [x] T020 在 `frontend/src/stores/app.ts` 中创建 Pinia 全局状态（当前页面、侧栏折叠状态、API连接状态）
+
+**检查点**：基础就绪 — 数据库可连接、API路由可注册、即梦AI客户端可调用、前端路由和布局可用。
+
+---
+
+### 阶段 3：用户故事 US-001 — 配置API密钥
+
+**目标**：系统从 `.env` 文件读取火山引擎 AK/SK，启动时完成鉴权初始化，校验失败时给出明确提示并阻止非鉴权的API调用。
+
+- [x] T021 [US1] 在 `backend/app/core/config.py` 中实现AK/SK读取与校验逻辑（启动时检测环境变量，缺失时打印错误并退出）
+- [x] T022 [US1] 在 `backend/main.py` 中集成启动校验（FastAPI 事件处理，启动前调用配置校验）
+- [x] T023 [US1] 在 `backend/app/integration/jimeng_client.py` 中实现客户端初始化与鉴权（使用读取到的AK/SK初始化SDK客户端）
+- [x] T024 [US1] 在 `frontend/src/components/StatusIndicator.vue` 中实现API连接状态指示组件（header中的状态指示灯，通过健康检查接口检测）
+
+---
+
+### 阶段 4：用户故事 US-002 — 文生图
+
+**目标**：用户在Web页面输入文本描述（提示词），选择参数，系统调用即梦AI文生图API生成图片并保存到本地。
+
+#### 后端实现
+
+- [x] T025 [P] [US2] 在 `backend/app/services/generation_service.py` 中实现文生图业务逻辑（提交任务 → 轮询状态 → 下载图片 → 保存记录）
+- [x] T026 [P] [US2] 在 `backend/app/services/file_service.py` 中实现文件管理服务（按日期创建目录、保存图片到 `./output/YYYYMMDD/{task_id}_{index}.png`）
+- [x] T027 [US2] 在 `backend/app/api/v1/generations.py` 中实现文生图接口 `POST /api/v1/generations/text2img`、查询任务状态接口 `GET /api/v1/generations/{generation_id}/status`、获取生成结果接口 `GET /api/v1/generations/{generation_id}`
+- [x] T028 [US2] 在 `backend/app/api/v1/health.py` 中实现健康检查接口 `GET /api/v1/health`
+
+#### 前端实现
+
+- [x] T029 [P] [US2] 在 `frontend/src/api/generation.ts` 中封装文生图相关API请求（submitText2Img、queryStatus、getResult）
+- [x] T030 [P] [US2] 在 `frontend/src/views/Text2ImgView.vue` 中实现文生图页面（正向/负面提示词输入、图片尺寸选择、生成数量、风格选择、CFG Scale滑块、Seed输入、生成按钮、结果展示区域）
+- [x] T031 [US2] 在 `frontend/src/components/GenerationResult.vue` 中实现生成结果展示组件（图片网格展示、完成状态标签、点击查看大图）
+- [x] T032 [US2] 在 `frontend/src/components/LoadingOverlay.vue` 中实现加载状态组件（生成中的动画和提示文字）
+- [x] T033 [US2] 在 `frontend/src/stores/generation.ts` 中创建 Pinia 生成状态管理（当前任务状态、轮询逻辑）
+
+---
+
+### 阶段 5：用户故事 US-003 — 图生图
+
+**目标**：用户上传参考图片并配合文本描述，系统调用即梦AI图生图API生成新图片。
+
+#### 后端实现
+
+- [x] T034 [P] [US3] 在 `backend/app/services/generation_service.py` 中扩展图生图业务逻辑（接收参考图片路径 → 上传至即梦AI → 调用图生图API）
+- [x] T035 [US3] 在 `backend/app/api/v1/upload.py` 中实现图片上传接口 `POST /api/v1/upload/image`（接收 multipart/form-data，保存到临时目录，返回本地路径）
+- [x] T036 [US3] 在 `backend/app/api/v1/generations.py` 中扩展图生图接口 `POST /api/v1/generations/img2img`
+
+#### 前端实现
+
+- [x] T037 [P] [US3] 在 `frontend/src/api/upload.ts` 中封装图片上传API请求
+- [x] T038 [P] [US3] 在 `frontend/src/components/ImageUploader.vue` 中实现图片上传组件（拖拽/点击上传、预览、删除、格式/大小校验）
+- [x] T039 [US3] 在 `frontend/src/views/Img2ImgView.vue` 中实现图生图页面（上传参考图片 + 文生图同款参数 + 生成按钮、未上传图片时校验提示）
+
+---
+
+### 阶段 6：用户故事 US-004 — 局部重绘
+
+**目标**：用户上传图片，在画布中用画笔标记要修改的区域，配合文本描述进行局部重绘。
+
+#### 后端实现
+
+- [x] T040 [P] [US4] 在 `backend/app/services/generation_service.py` 中扩展局部重绘业务逻辑（读取原图和遮罩图 → 调用即梦AI局部重绘API）
+- [x] T041 [US4] 在 `backend/app/api/v1/generations.py` 中扩展局部重绘接口 `POST /api/v1/generations/inpainting`
+
+#### 前端实现
+
+- [x] T042 [P] [US4] 在 `frontend/src/components/InpaintCanvas.vue` 中实现画布组件（图片加载、画笔/橡皮擦工具、画笔大小调节、生成遮罩图、清除标记）
+- [x] T043 [US4] 在 `frontend/src/views/InpaintView.vue` 中实现局部重绘页面（上传图片 → 画布标记区域 → 输入提示词 → 生成）
+
+---
+
+### 阶段 7：用户故事 US-005 — 历史生成记录管理
+
+**目标**：用户查看历史图片生成记录，包括提示词、生成时间、参数和缩略图，支持详情查看和删除。
+
+#### 后端实现
+
+- [x] T044 [P] [US5] 在 `backend/app/services/history_service.py` 中实现历史记录管理服务（分页查询、详情查询、删除记录及关联图片文件）
+- [x] T045 [US5] 在 `backend/app/api/v1/generations.py` 中扩展历史记录相关接口：`GET /api/v1/generations`（分页列表）、`DELETE /api/v1/generations/{generation_id}`（删除）
+
+#### 前端实现
+
+- [x] T046 [P] [US5] 在 `frontend/src/api/history.ts` 中封装历史记录API请求（getList、getDetail、delete）
+- [x] T047 [P] [US5] 在 `frontend/src/views/HistoryView.vue` 中实现历史记录页面（列表展示：缩略图+提示词摘要+时间+类型、刷新按钮、清空按钮、空状态展示）
+- [x] T048 [US5] 在 `frontend/src/components/HistoryDetailModal.vue` 中实现历史详情弹框（大图展示、完整参数信息、关闭按钮）
+- [x] T049 [US5] 在 `frontend/src/components/DeleteConfirmModal.vue` 中实现删除确认弹框（二次确认、删除动画）
+
+---
+
+### 阶段 8：交付准备
+
+**目的**：进行收尾，确保项目文档完整、可正常启动、前后端正常通信、页面正常渲染。
+
+- [x] T050 完善 `README.md`（完善启动说明、环境变量配置说明、使用指南）
+- [x] T051 代码清理和重构（移除调试代码、统一代码风格、补充必要注释）
+- [x] T052 静态语法检查 — 后端（`flake8` 或 `pylint` 检查Python代码语法）
+- [x] T053 静态语法检查 — 前端（`npm run lint` 或 TypeScript 编译检查）
+- [x] T054 启动后端服务并验证API可用性（`uvicorn backend.main:app`，验证健康检查、文生图等接口）
+- [x] T055 启动前端开发服务器并验证页面渲染（`npm run dev`，验证路由、布局、各页面组件渲染）
+- [x] T056 前后端联调验证（前端API调用是否正常通信、数据流转是否正确）
+
+---
+
+## 依赖与执行顺序
+
+### 阶段依赖
+
+| 阶段 | 依赖 | 说明 |
+|------|------|------|
+| 阶段 1：项目初始化 | 无 | 可立即开始 |
+| 阶段 2：基础设施 | 阶段 1 | 依赖项目结构就绪 |
+| 阶段 3：US-001 配置API密钥 | 阶段 2 | 依赖基础设施中的config模块和SDK集成 |
+| 阶段 4：US-002 文生图 | 阶段 2 + 阶段 3 | 依赖即梦AI客户端和基础数据模型 |
+| 阶段 5：US-003 图生图 | 阶段 4 | 依赖文生图服务和图片上传服务 |
+| 阶段 6：US-004 局部重绘 | 阶段 4 | 依赖文生图服务和画布组件 |
+| 阶段 7：US-005 历史记录 | 阶段 2 | 依赖基础数据模型 |
+| 阶段 8：交付准备 | 所有阶段 | 依赖所有用户故事完成 |
+
+### 用户故事依赖
+
+- **US-001（配置API密钥）**：阶段 2 完成后即可开始 — 不依赖其他故事
+- **US-002（文生图）**：依赖 US-001 完成（即梦AI客户端就绪），是图片生成的基础功能
+- **US-003（图生图）**：依赖 US-002 完成的服务架构（复用文生图的轮询、保存逻辑）
+- **US-004（局部重绘）**：依赖 US-002 完成的服务架构（复用文生图的轮询、保存逻辑）
+- **US-005（历史记录）**：依赖 US-002/US-003/US-004 的数据写入，建议最后实现
+
+### 每个用户故事内部执行顺序
+
+1. 先模型（如涉及新实体）→ 服务 → API端点
+2. 前端与后端可并行开发（标记 [P] 的任务）
+3. 先核心实现，后集成验证
+4. 先完成当前故事，再进入下一优先级
+
+### 并行机会
+
+- 所有标记 [P] 的基础任务可在阶段 2 内并行执行（T011~T012 模型创建可并行，T015 SDK集成与T006~T010框架搭建可并行）
+- 阶段 4 中 T025 文生图服务与 T026 文件管理服务可并行，T029 API封装与 T030 页面实现可并行
+- 阶段 5 中 T034 图生图服务与 T035 上传接口可并行，T037 API封装与 T038 上传组件可并行
+- 阶段 6 中 T040 局部重绘服务与 T042 画布组件可并行
+- 阶段 7 中 T044 历史服务与 T046 API封装可并行
+
+---
+
+## 实现策略
+
+### 1. 后端分层架构
+
+```
+main.py (FastAPI 应用入口)
+  └── api/v1/ (路由层 — 接收请求、参数校验、返回响应)
+       └── services/ (服务层 — 业务逻辑编排)
+            ├── integration/ (第三方集成层 — 即梦AI API调用)
+            ├── models/ (数据模型层 — SQLAlchemy ORM)
+            └── utils/ (工具函数)
+```
+
+### 2. 即梦AI API调用策略
+
+- 使用 `volcengine-python-sdk` 的 `VikingVisionService` 进行图片生成API调用
+- 提交任务 → 获取 task_id → 轮询查询（每2~5秒查询一次，最多等待120秒）→ 完成时下载图片
+- 封装在 `JimengClient` 类中，对外暴露 `text2img()`、`img2img()`、`inpainting()`、`query_task()` 方法
+
+### 3. 异步任务处理
+
+- 后端同步处理（FastAPI同步路由）：用户提交请求后，后端同步等待轮询结果
+- 前端展示加载状态：提交后显示加载动画和"正在生成"提示
+- 后期可优化为后台异步任务 + WebSocket 推送，但 MVP 阶段先使用同步等待策略
+
+### 4. 前端数据流
+
+```
+页面 (View) → Pinia Store (状态管理) → API (Axios) → 后端API
+页面 (View) ← Pinia Store (响应式) ← API ← 后端API
+```
+
+- 生成任务状态通过前端轮询实现（提交任务后定时查询 `/api/v1/generations/{id}/status`）
+- 使用 Pinia 管理生成状态和全局状态
+
+### 5. 本地存储管理
+
+- 图片保存路径：`./output/YYYYMMDD/{task_id}_{index}.png`
+- 数据库路径：`./data/jimeng-ai.db`
+- 日志路径：`./logs/app.log`
+- 删除历史记录时，同步删除关联的本地图片文件
