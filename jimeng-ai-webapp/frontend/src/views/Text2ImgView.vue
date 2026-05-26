@@ -149,8 +149,10 @@ const form = reactive({
 })
 
 async function generate() {
+  console.log('[DEBUG] generate() 被调用, prompt=', form.prompt)
   if (!form.prompt.trim()) return
   generationStore.reset()
+  console.log('[DEBUG] reset完成, 准备调用 startText2Img')
 
   try {
     await generationStore.startText2Img({
@@ -162,8 +164,9 @@ async function generate() {
       seed: form.seed,
       image_count: form.image_count,
     })
+    console.log('[DEBUG] startText2Img 完成')
   } catch (e) {
-    // 错误已自动处理
+    console.error('[DEBUG] startText2Img 失败:', e)
   }
 }
 </script>

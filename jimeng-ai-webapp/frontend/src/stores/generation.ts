@@ -10,11 +10,14 @@ export const useGenerationStore = defineStore('generation', () => {
   const result = ref<any>(null)
 
   async function startText2Img(params: any) {
+    console.log('[DEBUG store] startText2Img 被调用, params=', params)
     isGenerating.value = true
     error.value = null
     currentStatus.value = 'generating'
     try {
+      console.log('[DEBUG store] 即将调用 submitText2Img API...')
       const res = await submitText2Img(params)
+      console.log('[DEBUG store] submitText2Img 返回:', res)
       // 后端同步生成，直接返回含 images 的完整结果
       result.value = res.data
       currentTaskId.value = res.data.id
@@ -22,6 +25,7 @@ export const useGenerationStore = defineStore('generation', () => {
       isGenerating.value = false
       return res
     } catch (e: any) {
+      console.error('[DEBUG store] startText2Img 失败:', e)
       error.value = e.message || '生成失败'
       currentStatus.value = 'failed'
       isGenerating.value = false
