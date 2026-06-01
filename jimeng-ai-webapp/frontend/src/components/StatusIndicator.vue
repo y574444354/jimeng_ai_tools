@@ -1,7 +1,9 @@
 <template>
   <div class="status-indicator">
-    <span class="status-dot" :class="{ offline: !connected }"></span>
-    <span class="status-text">{{ connected ? '已连接' : '未连接' }}</span>
+    <span class="status-dot" :class="{ offline: !connected }">
+      <span class="pulse-ring" v-if="connected"></span>
+    </span>
+    <span class="status-text">{{ connected ? 'API 已连接' : 'API 未连接' }}</span>
   </div>
 </template>
 
@@ -17,20 +19,39 @@ const connected = computed(() => appStore.apiConnected)
 .status-indicator {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: #909399;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
 }
 
 .status-dot {
-  width: 8px;
-  height: 8px;
+  position: relative;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #67C23A;
+  background: var(--success);
   display: inline-block;
 }
 
 .status-dot.offline {
-  background: #F56C6C;
+  background: var(--danger);
+}
+
+.pulse-ring {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.3);
+  animation: pulse-glow 2s infinite;
+}
+
+.status-text {
+  font-weight: 500;
 }
 </style>

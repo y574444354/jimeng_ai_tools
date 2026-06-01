@@ -7,35 +7,48 @@
     <div v-else class="canvas-wrapper">
       <!-- 工具栏 -->
       <div class="canvas-toolbar">
-        <button
-          class="tool-btn"
-          :class="{ active: currentTool === 'brush' }"
-          @click="currentTool = 'brush'"
-        >
-          🖊️ 画笔
-        </button>
-        <button
-          class="tool-btn"
-          :class="{ active: currentTool === 'eraser' }"
-          @click="currentTool = 'eraser'"
-        >
-          🧹 橡皮擦
-        </button>
+        <div class="tool-group">
+          <button
+            class="tool-btn"
+            :class="{ active: currentTool === 'brush' }"
+            @click="currentTool = 'brush'"
+          >
+            <el-icon :size="16"><Brush /></el-icon>
+            <span>画笔</span>
+          </button>
+          <button
+            class="tool-btn"
+            :class="{ active: currentTool === 'eraser' }"
+            @click="currentTool = 'eraser'"
+          >
+            <el-icon :size="16"><RemoveFilled /></el-icon>
+            <span>橡皮擦</span>
+          </button>
+        </div>
+
         <div class="tool-separator"></div>
-        <label class="tool-label">画笔大小:</label>
-        <input
-          type="range"
-          v-model.number="brushSize"
-          min="5"
-          max="100"
-          class="size-slider"
-        />
-        <span class="size-value">{{ brushSize }}px</span>
+
+        <div class="tool-group">
+          <label class="tool-label">大小</label>
+          <input
+            type="range"
+            v-model.number="brushSize"
+            min="5"
+            max="100"
+            class="size-slider"
+          />
+          <span class="size-badge">{{ brushSize }}px</span>
+        </div>
+
         <div class="tool-separator"></div>
-        <button class="tool-btn" @click="clearMask">🗑️ 清除标记</button>
+
+        <button class="tool-btn danger" @click="clearMask">
+          <el-icon :size="16"><Delete /></el-icon>
+          <span>清除标记</span>
+        </button>
       </div>
 
-      <!-- 画布区域 -->
+      <!-- 画布 -->
       <div class="canvas-container" ref="canvasContainer">
         <canvas ref="mainCanvas"></canvas>
       </div>
@@ -45,6 +58,7 @@
 
 <script setup lang="ts">
 import { ref, nextTick, onUnmounted } from 'vue'
+import { Brush, RemoveFilled, Delete } from '@element-plus/icons-vue'
 import ImageUploader from './ImageUploader.vue'
 
 const emit = defineEmits<{
@@ -79,24 +93,20 @@ async function loadImageToCanvas(filePath: string) {
   imageElement = new Image()
 
   imageElement.onload = () => {
-    // 设置canvas尺寸为图片尺寸（保持宽高比）
     const maxWidth = canvasContainer.value!.clientWidth || 600
     const scale = Math.min(maxWidth / imageElement!.width, 1)
     canvas.width = imageElement!.width * scale
     canvas.height = imageElement!.height * scale
 
-    // 绘制原图作为背景
     ctx.drawImage(imageElement!, 0, 0, canvas.width, canvas.height)
 
-    // 添加鼠标事件
     canvas.addEventListener('mousedown', startDrawing)
     canvas.addEventListener('mousemove', draw)
     canvas.addEventListener('mouseup', stopDrawing)
     canvas.addEventListener('mouseleave', stopDrawing)
   }
 
-  // 从后端获取图片 - 通过上传文件接口获取
-  const filename = filePath.replace(/^.*[\\/]/, '')
+  const filename = filePath.replace(/^.*[\/]/, '')
   const imageUrl = `/api/v1/upload/file/${encodeURIComponent(filename)}`
   imageElement.src = imageUrl
 }
@@ -136,7 +146,6 @@ function draw(e: MouseEvent) {
     ctx.strokeStyle = 'rgba(255, 255, 255, 1)'
     ctx.globalCompositeOperation = 'source-over'
   } else {
-    // 橡皮擦 - 露出原图
     ctx.globalCompositeOperation = 'destination-out'
   }
 
@@ -163,7 +172,6 @@ function clearMask() {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
-  // 重绘原图
   ctx.drawImage(imageElement, 0, 0, canvas.width, canvas.height)
 }
 
@@ -174,23 +182,19 @@ function getMaskDataUrl(): string {
   const ctx = canvas.getContext('2d')
   if (!ctx) return ''
 
-  // 只获取绘制区域（白色笔触部分）
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
   const data = imageData.data
 
-  // 创建遮罩：白色像素保留，其他为透明
   for (let i = 0; i < data.length; i += 4) {
     const r = data[i]
     const g = data[i + 1]
     const b = data[i + 2]
     if (r > 200 && g > 200 && b > 200) {
-      // 保持白色
       data[i] = 255
       data[i + 1] = 255
       data[i + 2] = 255
       data[i + 3] = 255
     } else {
-      // 其他设为黑色
       data[i] = 0
       data[i + 1] = 0
       data[i + 2] = 0
@@ -201,7 +205,6 @@ function getMaskDataUrl(): string {
   return canvas.toDataURL('image/png')
 }
 
-// 暴露方法给父组件
 defineExpose({
   getMaskDataUrl,
   getOriginalImagePath: () => originalImagePath.value,
@@ -210,8 +213,8 @@ defineExpose({
 
 <style scoped>
 .canvas-wrapper {
-  border: 1px solid #DCDFE6;
-  border-radius: 4px;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -219,46 +222,62 @@ defineExpose({
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  background: #F2F3F5;
-  border-bottom: 1px solid #E4E7ED;
+  padding: 10px 16px;
+  background: var(--bg-hover);
+  border-bottom: 1px solid var(--border-light);
   flex-wrap: wrap;
+}
+
+.tool-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .tool-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   padding: 6px 12px;
-  border: 1px solid #DCDFE6;
-  border-radius: 4px;
-  background: #fff;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
   cursor: pointer;
   font-size: 13px;
-  color: #606266;
-  transition: all 0.2s;
+  color: var(--text-regular);
+  transition: all var(--transition-fast);
+  font-weight: 500;
 }
 
 .tool-btn:hover {
-  border-color: #409EFF;
-  color: #409EFF;
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-bg);
 }
 
 .tool-btn.active {
-  background: #409EFF;
-  border-color: #409EFF;
+  background: var(--primary-gradient);
+  border-color: transparent;
   color: #fff;
+}
+
+.tool-btn.danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: var(--danger-bg);
 }
 
 .tool-separator {
   width: 1px;
   height: 24px;
-  background: #DCDFE6;
+  background: var(--border-base);
+  margin: 0 4px;
 }
 
 .tool-label {
-  font-size: 13px;
-  color: #606266;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .size-slider {
@@ -266,39 +285,43 @@ defineExpose({
   height: 4px;
   -webkit-appearance: none;
   appearance: none;
-  background: #EBEEF5;
+  background: var(--border-light);
   border-radius: 2px;
   outline: none;
+  cursor: pointer;
 }
 
 .size-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: #409EFF;
+  background: var(--primary);
   cursor: pointer;
   border: 2px solid #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
-.size-value {
+.size-badge {
   font-size: 12px;
-  color: #909399;
-  min-width: 30px;
+  font-weight: 600;
+  color: var(--primary);
+  min-width: 32px;
+  text-align: center;
 }
 
 .canvas-container {
   display: flex;
   justify-content: center;
-  background: #f0f0f0;
-  padding: 16px;
+  background: repeating-conic-gradient(#F3F4F6 0% 25%, transparent 0% 50%) 50% / 20px 20px;
+  padding: 20px;
   min-height: 200px;
 }
 
 .canvas-container canvas {
   max-width: 100%;
   cursor: crosshair;
+  box-shadow: var(--shadow-md);
 }
 
 .no-image {

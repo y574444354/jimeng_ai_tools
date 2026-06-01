@@ -3,15 +3,23 @@
     <div class="page-section">
       <div class="section-title">
         <div class="title-row">
-          <span>生成历史</span>
-          <div class="title-actions">
-            <el-button size="small" @click="refreshList">🔄 刷新</el-button>
-          </div>
+          <span class="title-left">
+            <el-icon :size="18"><Clock /></el-icon>
+            生成历史
+          </span>
+          <el-button size="small" @click="refreshList" class="refresh-btn">
+            <el-icon :size="14"><Refresh /></el-icon>
+            刷新
+          </el-button>
         </div>
       </div>
 
       <!-- 空状态 -->
-      <el-empty v-if="!loading && items.length === 0" description="暂无生成记录" />
+      <div v-if="!loading && items.length === 0" class="empty-state">
+        <el-icon :size="48" class="empty-icon"><FolderOpened /></el-icon>
+        <p class="empty-text">暂无生成记录</p>
+        <p class="empty-hint">开始生成图片后，记录将显示在这里</p>
+      </div>
 
       <!-- 列表 -->
       <div v-else class="history-list">
@@ -26,19 +34,22 @@
               v-if="item.thumbnail_path"
               :src="getImageUrl(item.thumbnail_path)"
               alt="缩略图"
+              loading="lazy"
             />
-            <div v-else class="thumb-placeholder">🎨</div>
+            <div v-else class="thumb-placeholder">
+              <el-icon :size="24"><Picture /></el-icon>
+            </div>
           </div>
           <div class="history-info">
             <div class="hi-prompt">{{ item.prompt }}</div>
             <div class="hi-meta">
-              <span>{{ getTaskTypeLabel(item.task_type) }}</span>
-              <span class="meta-sep">|</span>
+              <el-tag size="small" type="info" effect="plain">{{ getTaskTypeLabel(item.task_type) }}</el-tag>
+              <span class="meta-sep">·</span>
               <span>{{ item.image_size }}</span>
-              <span class="meta-sep">|</span>
+              <span class="meta-sep">·</span>
               <span>{{ formatTime(item.created_at) }}</span>
-              <span class="meta-sep">|</span>
-              <span :class="'status-tag status-' + item.status">{{ getStatusLabel(item.status) }}</span>
+              <span class="meta-sep">·</span>
+              <span :class="'status-badge status-' + item.status">{{ getStatusLabel(item.status) }}</span>
             </div>
           </div>
           <div class="history-actions" @click.stop>
@@ -47,8 +58,9 @@
               size="small"
               text
               @click="confirmDelete(item)"
+              class="delete-btn"
             >
-              🗑️ 删除
+              <el-icon :size="16"><Delete /></el-icon>
             </el-button>
           </div>
         </div>
@@ -62,6 +74,7 @@
           :total="total"
           layout="prev, pager, next"
           @current-change="handlePageChange"
+          background
         />
       </div>
     </div>
@@ -82,6 +95,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { Clock, Refresh, FolderOpened, Picture, Delete } from '@element-plus/icons-vue'
 import { getHistoryList, deleteHistory, HistoryItem } from '@/api/history'
 import HistoryDetailModal from '@/components/HistoryDetailModal.vue'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal.vue'
@@ -181,15 +195,52 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.history-view {
+  animation: fadeInUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .title-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+}
+
+.title-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.refresh-btn {
+  font-weight: 500;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px 0;
+}
+
+.empty-icon {
+  color: var(--text-placeholder);
+  margin-bottom: 12px;
+}
+
+.empty-text {
+  font-size: 15px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.empty-hint {
+  font-size: 13px;
+  color: var(--text-placeholder);
+  margin-top: 4px;
 }
 
 .history-list {
-  border: 1px solid #EBEEF5;
-  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -197,9 +248,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 12px 16px;
-  border-bottom: 1px solid #EBEEF5;
-  transition: background 0.2s;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-lighter);
+  transition: background var(--transition-fast);
   cursor: pointer;
 }
 
@@ -208,14 +259,14 @@ onMounted(() => {
 }
 
 .history-item:hover {
-  background: #F5F7FA;
+  background: var(--bg-hover);
 }
 
 .history-thumb {
-  width: 60px;
-  height: 60px;
-  border-radius: 4px;
-  background: #F2F3F5;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  background: var(--bg-hover);
   overflow: hidden;
   flex-shrink: 0;
   display: flex;
@@ -230,7 +281,7 @@ onMounted(() => {
 }
 
 .thumb-placeholder {
-  font-size: 24px;
+  color: var(--text-placeholder);
 }
 
 .history-info {
@@ -240,50 +291,65 @@ onMounted(() => {
 
 .hi-prompt {
   font-size: 14px;
-  color: #303133;
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  font-weight: 500;
 }
 
 .hi-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
-  color: #909399;
+  color: var(--text-secondary);
 }
 
 .meta-sep {
-  margin: 0 6px;
+  color: var(--border-base);
 }
 
-.status-tag {
-  padding: 1px 6px;
-  border-radius: 3px;
+.status-badge {
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
   font-size: 11px;
+  font-weight: 600;
 }
 
 .status-completed {
-  color: #67C23A;
-  background: #F0F9EB;
+  color: var(--success);
+  background: var(--success-bg);
 }
 
 .status-failed {
-  color: #F56C6C;
-  background: #FEF0F0;
+  color: var(--danger);
+  background: var(--danger-bg);
 }
 
-.status-processing {
-  color: #E6A23C;
-  background: #FDF6EC;
+.status-processing,
+.status-pending {
+  color: var(--warning);
+  background: var(--warning-bg);
 }
 
 .pagination-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .history-actions {
   flex-shrink: 0;
+}
+
+.delete-btn {
+  opacity: 0.4;
+  transition: opacity var(--transition-fast);
+}
+
+.history-item:hover .delete-btn {
+  opacity: 1;
 }
 </style>

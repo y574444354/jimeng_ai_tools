@@ -6,7 +6,12 @@
       class="result-card"
       @click="previewImage(image.url || image.file_path)"
     >
-      <img :src="getImageUrl(image.url || image.file_path)" :alt="'生成图片 ' + image.image_index" />
+      <div class="card-image-wrapper">
+        <img :src="getImageUrl(image.url || image.file_path)" :alt="'生成图片 ' + image.image_index" loading="lazy" />
+        <div class="card-overlay">
+          <el-icon :size="24"><ZoomIn /></el-icon>
+        </div>
+      </div>
       <div class="card-footer">
         <span class="tag tag-success">已完成</span>
         <span class="image-label">#{{ image.image_index }}</span>
@@ -14,7 +19,7 @@
     </div>
   </div>
 
-  <!-- 大图预览对话框 -->
+  <!-- 大图预览 -->
   <el-dialog
     v-model="previewVisible"
     :close-on-click-modal="true"
@@ -22,12 +27,13 @@
     center
     class="preview-dialog"
   >
-    <img :src="previewSrc" style="max-width: 80vw; max-height: 80vh;" alt="预览" />
+    <img :src="previewSrc" style="max-width: 80vw; max-height: 80vh; border-radius: 8px;" alt="预览" />
   </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { ZoomIn } from '@element-plus/icons-vue'
 
 const props = defineProps<{
   images: Array<{
@@ -55,51 +61,86 @@ function previewImage(src: string) {
 <style scoped>
 .result-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
 }
 
 .result-card {
-  border: 1px solid #EBEEF5;
-  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  transition: all 0.2s;
+  transition: all var(--transition-base);
   cursor: pointer;
+  background: var(--bg-card);
 }
 
 .result-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-base);
 }
 
-.result-card img {
+.card-image-wrapper {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+
+.card-image-wrapper img {
   width: 100%;
-  height: 200px;
+  height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform var(--transition-slow);
+}
+
+.result-card:hover .card-image-wrapper img {
+  transform: scale(1.05);
+}
+
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(99, 102, 241, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  color: white;
+}
+
+.result-card:hover .card-overlay {
+  opacity: 1;
 }
 
 .card-footer {
-  padding: 8px 12px;
+  padding: 10px 14px;
   font-size: 12px;
-  color: #909399;
+  color: var(--text-secondary);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #fff;
+  background: var(--bg-card);
 }
 
 .tag {
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .tag-success {
-  background: #F0F9EB;
-  color: #67C23A;
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.image-label {
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .preview-dialog :deep(.el-dialog__body) {

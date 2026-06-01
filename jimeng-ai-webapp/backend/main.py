@@ -15,12 +15,18 @@ from app.api.v1 import api_router
 from app.api.v1.health import router as health_router
 from app.api.v1.generations import router as generations_router
 from app.api.v1.upload import router as upload_router
+from app.api.v1.ocr import router as ocr_router
+from app.api.v1.articles import router as articles_router
+from app.api.v1.categories import router as categories_router
+from app.api.v1.tags import router as tags_router
+from app.api.v1.search import router as search_router
+from app.api.v1.publish import router as publish_router
 from app.models import init_db
 from app.integration.jimeng_client import jimeng_client
 
 app = FastAPI(
-    title="即梦AI图片生成系统",
-    description="基于火山引擎即梦AI API的图片生成Web应用",
+    title="雪桥AI图片生成系统",
+    description="基于火山引擎雪桥AI API的图片生成Web应用",
     version="1.0.0",
 )
 
@@ -41,6 +47,12 @@ app.add_exception_handler(Exception, general_exception_handler)
 api_router.include_router(health_router, tags=["健康检查"])
 api_router.include_router(generations_router, tags=["图片生成"])
 api_router.include_router(upload_router, tags=["文件上传"])
+api_router.include_router(ocr_router, tags=["文字识别"])
+api_router.include_router(articles_router, tags=["文章管理"])
+api_router.include_router(categories_router, tags=["分类管理"])
+api_router.include_router(tags_router, tags=["标签管理"])
+api_router.include_router(search_router, tags=["智能搜索"])
+api_router.include_router(publish_router, tags=["发布管理"])
 app.include_router(api_router)
 
 # 挂载静态文件服务（用于访问生成的图片）
@@ -53,7 +65,7 @@ app.mount("/output", StaticFiles(directory=output_dir), name="output")
 async def startup_event():
     """应用启动时执行"""
     logger.info("=" * 50)
-    logger.info("即梦AI图片生成系统启动中...")
+    logger.info("雪桥AI图片生成系统启动中...")
     logger.info("=" * 50)
 
     # 1. 校验AK/SK配置
@@ -68,13 +80,13 @@ async def startup_event():
         print("!" * 60 + "\n")
         sys.exit(1)
 
-    # 2. 初始化即梦AI客户端
+    # 2. 初始化雪桥AI客户端
     try:
         jimeng_client.initialize()
-        logger.info("✓ 即梦AI客户端初始化成功")
+        logger.info("✓ 雪桥AI客户端初始化成功")
     except Exception as e:
-        logger.error(f"✗ 即梦AI客户端初始化失败: {str(e)}")
-        print(f"\n错误：即梦AI客户端初始化失败 - {str(e)}\n")
+        logger.error(f"✗ 雪桥AI客户端初始化失败: {str(e)}")
+        print(f"\n错误：雪桥AI客户端初始化失败 - {str(e)}\n")
         sys.exit(1)
 
     # 3. 初始化数据库

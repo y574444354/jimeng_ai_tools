@@ -1,6 +1,6 @@
-# 即梦AI图片生成系统
+# 雪桥AI图片生成系统
 
-基于 **火山引擎即梦AI API** 的 Web 应用，支持文生图、图生图、局部重绘等 AI 图片生成与编辑功能。
+基于 **火山引擎雪桥AI API** 的 Web 应用，支持文生图、图生图、局部重绘等 AI 图片生成与编辑功能。
 
 ## 功能特性
 
@@ -21,7 +21,7 @@
 | SQLAlchemy 2.0 | ORM（对象关系映射） |
 | SQLite | 数据库 |
 | Pydantic | 数据校验与序列化 |
-| volcengine-python-sdk | 即梦AI SDK |
+| volcengine-python-sdk | 雪桥AI SDK |
 | Uvicorn | ASGI 服务器 |
 
 ### 前端
@@ -60,7 +60,7 @@ jimeng_ai/
 │   │   │   │   ├── file_service.py
 │   │   │   │   └── history_service.py
 │   │   │   └── integration/          # 第三方集成
-│   │   │       └── jimeng_client.py   # 即梦AI API 客户端
+│   │   │       └── jimeng_client.py   # 雪桥AI API 客户端
 │   │   ├── main.py                    # FastAPI 应用入口
 │   │   ├── requirements.txt
 │   │   ├── data/                      # 数据库文件目录
@@ -95,7 +95,7 @@ jimeng_ai/
 
 - **Python 3.11** 或更高版本
 - **Node.js 18** 或更高版本
-- **火山引擎账号**（已开通即梦AI服务）
+- **火山引擎账号**（已开通雪桥AI服务）
 
 ### 1. 克隆项目
 
@@ -180,7 +180,7 @@ npm run dev
 
 ## 参考文档
 
-- [即梦AI-图片生成4.6 接口文档](https://www.volcengine.com/docs/85621/2275082?lang=zh)
+- [雪桥AI-图片生成4.6 接口文档](https://www.volcengine.com/docs/85621/2275082?lang=zh)
 - [火山引擎控制台](https://console.volcengine.com)
 
 ## 许可证

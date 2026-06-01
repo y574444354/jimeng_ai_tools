@@ -2,10 +2,12 @@
   <div class="text2img-view">
     <!-- 参数设置区 -->
     <div class="page-section">
-      <div class="section-title">生成参数</div>
+      <div class="section-title">
+        <el-icon :size="18"><Setting /></el-icon>
+        生成参数
+      </div>
 
       <el-form label-position="top">
-        <!-- 正向提示词 -->
         <el-form-item label="正向提示词" required>
           <el-input
             v-model="form.prompt"
@@ -17,7 +19,6 @@
           />
         </el-form-item>
 
-        <!-- 负面提示词 -->
         <el-form-item label="负面提示词">
           <el-input
             v-model="form.negative_prompt"
@@ -29,19 +30,15 @@
           />
         </el-form-item>
 
-        <!-- 图片尺寸 -->
         <el-form-item label="图片尺寸">
-          <div class="size-chips">
-            <el-radio-group v-model="form.image_size" class="size-group">
-              <el-radio-button value="1024x1024" size="small">1:1 方图</el-radio-button>
-              <el-radio-button value="1920x1080" size="small">16:9 横图</el-radio-button>
-              <el-radio-button value="1080x1920" size="small">9:16 竖图</el-radio-button>
-              <el-radio-button value="1280x960" size="small">4:3 横图</el-radio-button>
-            </el-radio-group>
-          </div>
+          <el-radio-group v-model="form.image_size" class="size-group">
+            <el-radio-button value="1024x1024">1:1 方图</el-radio-button>
+            <el-radio-button value="1920x1080">16:9 横图</el-radio-button>
+            <el-radio-button value="1080x1920">9:16 竖图</el-radio-button>
+            <el-radio-button value="1280x960">4:3 横图</el-radio-button>
+          </el-radio-group>
         </el-form-item>
 
-        <!-- 参数行 -->
         <el-row :gutter="16">
           <el-col :span="8">
             <el-form-item label="生成数量">
@@ -76,7 +73,6 @@
           </el-col>
         </el-row>
 
-        <!-- 风格选择 -->
         <el-form-item label="图片风格">
           <el-select v-model="form.style" placeholder="不选择（默认风格）" clearable style="width: 100%">
             <el-option value="写实摄影" label="写实摄影" />
@@ -90,7 +86,6 @@
           </el-select>
         </el-form-item>
 
-        <!-- 生成按钮 -->
         <el-form-item>
           <el-button
             type="primary"
@@ -100,19 +95,22 @@
             @click="generate"
             class="generate-btn"
           >
-            {{ generationStore.isGenerating ? '生成中...' : '✨ 生成图片' }}
+            <el-icon v-if="!generationStore.isGenerating" :size="18"><MagicStick /></el-icon>
+            {{ generationStore.isGenerating ? 'AI 生成中...' : '开始生成' }}
           </el-button>
         </el-form-item>
       </el-form>
     </div>
 
     <!-- 生成结果区 -->
-    <div class="page-section" v-if="generationStore.result">
-      <div class="section-title">生成结果</div>
+    <div class="page-section result-section" v-if="generationStore.result">
+      <div class="section-title">
+        <el-icon :size="18"><PictureFilled /></el-icon>
+        生成结果
+      </div>
       <GenerationResult :images="generationStore.result.images || []" />
     </div>
 
-    <!-- 错误提示 -->
     <el-alert
       v-if="generationStore.error"
       :title="generationStore.error"
@@ -122,7 +120,6 @@
       @close="generationStore.reset()"
     />
 
-    <!-- 加载遮罩 -->
     <LoadingOverlay
       :visible="generationStore.isGenerating"
       :status="generationStore.currentStatus"
@@ -131,7 +128,8 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted } from 'vue'
+import { reactive } from 'vue'
+import { Setting, MagicStick, PictureFilled } from '@element-plus/icons-vue'
 import { useGenerationStore } from '@/stores/generation'
 import GenerationResult from '@/components/GenerationResult.vue'
 import LoadingOverlay from '@/components/LoadingOverlay.vue'
@@ -172,18 +170,38 @@ async function generate() {
 </script>
 
 <style scoped>
-.size-chips {
-  width: 100%;
+.text2img-view {
+  animation: fadeInUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .size-group {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .generate-btn {
   width: 100%;
-  height: 48px;
+  height: 52px;
   font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: var(--radius-md);
+  background: var(--primary-gradient) !important;
+  border: none !important;
+  transition: all var(--transition-base);
+}
+
+.generate-btn:hover {
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  transform: translateY(-2px);
+}
+
+.generate-btn:active {
+  transform: translateY(0);
+}
+
+.result-section {
+  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>

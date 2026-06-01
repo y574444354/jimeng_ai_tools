@@ -10,7 +10,7 @@ async def health_check():
     """服务健康检查"""
     return success_response({
         "status": "healthy",
-        "service": "jimeng-ai",
+        "service": "xueqiao-ai",
         "version": "1.0.0",
     })
 

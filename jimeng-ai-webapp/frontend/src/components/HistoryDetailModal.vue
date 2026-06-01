@@ -3,63 +3,66 @@
     :model-value="visible"
     @update:model-value="$emit('update:visible', $event)"
     title="生成详情"
-    width="700px"
+    width="720px"
     :close-on-click-modal="true"
   >
     <div v-if="record" class="detail-content">
-      <!-- 大图展示 -->
+      <!-- 图片展示 -->
       <div class="detail-images" v-if="record.images && record.images.length > 0">
         <el-image
           v-for="img in record.images"
           :key="img.id"
           :src="getImageUrl(img.url || img.file_path)"
           :preview-src-list="getImageList(record.images)"
-          fit="contain"
+          fit="cover"
           class="detail-image"
         />
       </div>
 
       <!-- 参数信息 -->
       <div class="detail-info">
-        <div class="info-row">
-          <span class="info-label">任务类型</span>
-          <span class="info-value">{{ getTaskTypeLabel(record.task_type) }}</span>
+        <div class="info-grid">
+          <div class="info-row">
+            <span class="info-label">任务类型</span>
+            <el-tag size="small" type="primary" effect="light">{{ getTaskTypeLabel(record.task_type) }}</el-tag>
+          </div>
+          <div class="info-row">
+            <span class="info-label">图片尺寸</span>
+            <span class="info-value">{{ record.image_size }}</span>
+          </div>
+          <div class="info-row" v-if="record.style">
+            <span class="info-label">风格</span>
+            <span class="info-value">{{ record.style }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">CFG Scale</span>
+            <span class="info-value">{{ record.cfg_scale }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Seed</span>
+            <span class="info-value mono">{{ record.seed }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">生成数量</span>
+            <span class="info-value">{{ record.image_count }} 张</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">创建时间</span>
+            <span class="info-value">{{ formatTime(record.created_at) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">状态</span>
+            <span class="info-value" :class="'status-' + record.status">{{ getStatusLabel(record.status) }}</span>
+          </div>
         </div>
-        <div class="info-row">
-          <span class="info-label">正向提示词</span>
-          <span class="info-value">{{ record.prompt }}</span>
+
+        <div class="info-prompt">
+          <div class="prompt-label">正向提示词</div>
+          <div class="prompt-content">{{ record.prompt }}</div>
         </div>
-        <div class="info-row" v-if="record.negative_prompt">
-          <span class="info-label">负面提示词</span>
-          <span class="info-value">{{ record.negative_prompt }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">图片尺寸</span>
-          <span class="info-value">{{ record.image_size }}</span>
-        </div>
-        <div class="info-row" v-if="record.style">
-          <span class="info-label">风格</span>
-          <span class="info-value">{{ record.style }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">CFG Scale</span>
-          <span class="info-value">{{ record.cfg_scale }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Seed</span>
-          <span class="info-value">{{ record.seed }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">生成数量</span>
-          <span class="info-value">{{ record.image_count }} 张</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">创建时间</span>
-          <span class="info-value">{{ formatTime(record.created_at) }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">状态</span>
-          <span class="info-value" :class="'status-' + record.status">{{ getStatusLabel(record.status) }}</span>
+        <div class="info-prompt" v-if="record.negative_prompt">
+          <div class="prompt-label negative">负面提示词</div>
+          <div class="prompt-content">{{ record.negative_prompt }}</div>
         </div>
       </div>
     </div>
@@ -121,45 +124,87 @@ function formatTime(timeStr: string): string {
 
 .detail-images {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .detail-image {
   width: 100%;
-  height: 200px;
-  border-radius: 8px;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  border: 1px solid #EBEEF5;
+  border: 1px solid var(--border-light);
+  transition: transform var(--transition-fast);
+}
+
+.detail-image:hover {
+  transform: scale(1.02);
 }
 
 .detail-info {
-  border-top: 1px solid #EBEEF5;
-  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+  padding-top: 20px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px 24px;
+  margin-bottom: 20px;
 }
 
 .info-row {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid #F5F7FA;
+  border-bottom: 1px solid var(--border-lighter);
 }
 
 .info-label {
-  width: 120px;
-  flex-shrink: 0;
-  color: #909399;
+  color: var(--text-secondary);
   font-size: 13px;
+  flex-shrink: 0;
 }
 
 .info-value {
-  flex: 1;
-  color: #303133;
+  color: var(--text-primary);
   font-size: 13px;
-  word-break: break-all;
+  font-weight: 500;
 }
 
-.status-completed { color: #67C23A; }
-.status-failed { color: #F56C6C; }
-.status-processing { color: #E6A23C; }
+.info-value.mono {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+}
+
+.status-completed { color: var(--success); font-weight: 600; }
+.status-failed { color: var(--danger); font-weight: 600; }
+.status-processing { color: var(--warning); font-weight: 600; }
+
+.info-prompt {
+  margin-bottom: 16px;
+}
+
+.prompt-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.prompt-label.negative {
+  color: var(--danger);
+}
+
+.prompt-content {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  padding: 10px 14px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-sm);
+  word-break: break-all;
+}
 </style>

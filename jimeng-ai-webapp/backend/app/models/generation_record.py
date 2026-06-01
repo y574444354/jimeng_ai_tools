@@ -19,7 +19,7 @@ class GenerationRecord(Base):
     image_count = Column(Integer, nullable=False, default=1)  # 生成数量 1~4
     reference_image_path = Column(String(500), nullable=True)  # 参考图片路径
     mask_image_path = Column(String(500), nullable=True)  # 遮罩图路径
-    api_task_id = Column(String(100), nullable=True, index=True)  # 即梦AI任务ID
+    api_task_id = Column(String(100), nullable=True, index=True)  # 雪桥AI任务ID
     status = Column(String(20), nullable=False, default="pending", index=True)  # pending/processing/completed/failed
     error_message = Column(Text, nullable=True)  # 失败时的错误描述
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)

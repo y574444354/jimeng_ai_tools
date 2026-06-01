@@ -1,42 +1,65 @@
 <template>
   <div class="app-container">
-    <!-- 侧边栏 -->
-    <div class="sidebar" :class="{ collapsed: appStore.sidebarCollapsed }">
+    <!-- 侧边栏 — 浅色毛玻璃风格 -->
+    <aside class="sidebar" :class="{ collapsed: appStore.sidebarCollapsed }">
       <div class="sidebar-logo">
-        <div class="logo-icon">✨</div>
-        <span class="logo-text">即梦AI</span>
+        <div class="logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="logo-text gradient-text">雪桥AI</span>
       </div>
-      <div class="sidebar-menu">
+
+      <nav class="sidebar-menu">
         <router-link
           v-for="item in menuItems"
           :key="item.path"
           :to="item.path"
           class="menu-item"
           :class="{ active: currentRoute === item.path }"
+          :title="item.label"
         >
-          <span class="menu-icon">{{ item.icon }}</span>
+          <el-icon class="menu-icon" :size="18">
+            <component :is="item.icon" />
+          </el-icon>
           <span class="menu-label">{{ item.label }}</span>
+          <div v-if="currentRoute === item.path" class="active-indicator"></div>
         </router-link>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-toggle" @click="appStore.toggleSidebar">
+          <el-icon :size="16">
+            <Fold v-if="!appStore.sidebarCollapsed" />
+            <Expand v-else />
+          </el-icon>
+        </div>
       </div>
-      <div class="sidebar-toggle" @click="appStore.toggleSidebar">
-        <span>{{ appStore.sidebarCollapsed ? '☰' : '✕' }}</span>
-      </div>
-    </div>
+    </aside>
 
     <!-- 主内容区 -->
-    <div class="main-content">
-      <!-- 顶部栏 -->
+    <div class="main-content" :class="{ expanded: appStore.sidebarCollapsed }">
+      <!-- 顶部栏 — 毛玻璃 -->
       <header class="header">
-        <div class="header-title">{{ appStore.currentPageTitle }}</div>
-        <div class="header-actions">
+        <div class="header-left">
+          <h1 class="header-title">{{ appStore.currentPageTitle }}</h1>
+        </div>
+        <div class="header-right">
           <StatusIndicator />
         </div>
       </header>
 
       <!-- 页面内容 -->
-      <div class="page-content">
-        <router-view />
-      </div>
+      <main class="page-content">
+        <router-view v-slot="{ Component }">
+          <transition name="page" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
+      </main>
     </div>
   </div>
 </template>
@@ -45,6 +68,19 @@
 import { computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'
+import {
+  Edit,
+  Picture,
+  Brush,
+  Clock,
+  Document,
+  Fold,
+  Expand,
+  Search,
+  Notebook,
+  EditPen,
+  Promotion,
+} from '@element-plus/icons-vue'
 import StatusIndicator from '@/components/StatusIndicator.vue'
 
 const appStore = useAppStore()
@@ -53,10 +89,15 @@ const route = useRoute()
 const currentRoute = computed(() => route.path)
 
 const menuItems = [
-  { path: '/text2img', label: '文生图', icon: '✏️' },
-  { path: '/img2img', label: '图生图', icon: '🖼️' },
-  { path: '/inpaint', label: '局部重绘', icon: '🎨' },
-  { path: '/history', label: '历史记录', icon: '📋' },
+  { path: '/text2img', label: '文生图', icon: Edit },
+  { path: '/img2img', label: '图生图', icon: Picture },
+  { path: '/inpaint', label: '局部重绘', icon: Brush },
+  { path: '/history', label: '历史记录', icon: Clock },
+  { path: '/ocr', label: '图片识文', icon: Document },
+  { path: '/search', label: '智能搜索', icon: Search },
+  { path: '/articles', label: '文章管理', icon: Notebook },
+  { path: '/articles/new', label: '写文章', icon: EditPen },
+  { path: '/publish', label: '发布中心', icon: Promotion },
 ]
 
 watch(
@@ -71,7 +112,6 @@ watch(
 
 onMounted(() => {
   appStore.checkApiStatus()
-  // 定期检查API状态
   setInterval(() => {
     appStore.checkApiStatus()
   }, 30000)
@@ -82,12 +122,16 @@ onMounted(() => {
 .app-container {
   display: flex;
   min-height: 100vh;
+  background: var(--bg-page);
 }
 
-/* 侧边栏 */
+/* ======== 侧边栏 ======== */
 .sidebar {
-  width: var(--sidebar-width, 220px);
-  background: var(--bg-menu, #304156);
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-right: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -95,43 +139,48 @@ onMounted(() => {
   left: 0;
   height: 100vh;
   z-index: 100;
-  transition: width 0.3s;
+  transition: width var(--transition-slow), box-shadow var(--transition-slow);
   overflow: hidden;
+}
+
+.sidebar:not(.collapsed) {
+  box-shadow: 2px 0 24px rgba(0, 0, 0, 0.04);
 }
 
 .sidebar.collapsed {
-  width: 64px;
+  width: var(--sidebar-collapsed);
 }
 
+/* Logo */
 .sidebar-logo {
-  height: var(--header-height, 56px);
+  height: var(--header-height);
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  gap: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 18px;
+  gap: 10px;
   white-space: nowrap;
   overflow: hidden;
+  border-bottom: 1px solid var(--sidebar-border);
 }
 
 .logo-icon {
-  width: 28px;
-  height: 28px;
-  background: linear-gradient(135deg, #409EFF, #66B1FF);
-  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  background: var(--primary-gradient);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  color: #fff;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 .logo-text {
-  color: #fff;
-  font-size: 16px;
-  font-weight: 600;
-  transition: opacity 0.3s;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: opacity var(--transition-base);
+  white-space: nowrap;
 }
 
 .sidebar.collapsed .logo-text {
@@ -140,111 +189,163 @@ onMounted(() => {
   overflow: hidden;
 }
 
+/* 菜单 */
 .sidebar-menu {
   flex: 1;
-  padding: 8px 0;
+  padding: 12px 10px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
-  color: #BFCDDB;
+  padding: 10px 14px;
+  color: var(--sidebar-text);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
   white-space: nowrap;
   overflow: hidden;
   text-decoration: none;
-  border-left: 3px solid transparent;
+  border-radius: var(--radius-md);
+  position: relative;
+  font-weight: 500;
+  font-size: 14px;
 }
 
 .menu-item:hover {
-  background: #263445;
-  color: #FFFFFF;
+  background: var(--primary-bg);
+  color: var(--sidebar-active-text);
 }
 
 .menu-item.active {
-  background: #263445;
-  color: #FFFFFF;
-  border-left-color: #409EFF;
+  background: var(--sidebar-active-bg);
+  color: var(--sidebar-active-text);
+  font-weight: 600;
+}
+
+.active-indicator {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: var(--primary-gradient);
+  border-radius: 0 3px 3px 0;
 }
 
 .menu-icon {
-  font-size: 18px;
-  width: 20px;
-  text-align: center;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.menu-item.active .menu-icon {
+  color: var(--primary);
+}
+
+/* 收起状态 */
 .sidebar.collapsed .menu-item {
   justify-content: center;
   padding: 12px 0;
+  border-radius: var(--radius-md);
+}
+
+.sidebar.collapsed .active-indicator {
+  left: 0;
 }
 
 .sidebar.collapsed .menu-label {
   display: none;
 }
 
+/* 底部 */
+.sidebar-footer {
+  border-top: 1px solid var(--sidebar-border);
+  padding: 8px;
+}
+
 .sidebar-toggle {
-  padding: 12px 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  color: #BFCDDB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  color: var(--sidebar-text);
   cursor: pointer;
-  text-align: center;
-  font-size: 18px;
-  transition: color 0.2s;
+  transition: all var(--transition-fast);
 }
 
 .sidebar-toggle:hover {
-  color: #fff;
+  background: var(--primary-bg);
+  color: var(--primary);
 }
 
-/* 主内容 */
+/* ======== 主内容区 ======== */
 .main-content {
   flex: 1;
-  margin-left: var(--sidebar-width, 220px);
-  transition: margin-left 0.3s;
+  margin-left: var(--sidebar-width);
+  transition: margin-left var(--transition-slow);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
-.sidebar.collapsed + .main-content {
-  margin-left: 64px;
+.main-content.expanded {
+  margin-left: var(--sidebar-collapsed);
 }
 
-/* 顶部栏 */
+/* ======== 顶部栏 ======== */
 .header {
-  height: var(--header-height, 56px);
-  background: #fff;
-  border-bottom: 1px solid #E4E7ED;
+  height: var(--header-height);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border-bottom: 1px solid var(--sidebar-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 28px;
   position: sticky;
   top: 0;
   z-index: 50;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .header-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
 }
 
-.header-actions {
+.header-right {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-/* 页面内容 */
+/* ======== 页面内容 ======== */
 .page-content {
-  padding: 24px;
+  padding: 28px;
   flex: 1;
+}
+
+/* 页面过渡动画 */
+.page-enter-active {
+  animation: fadeInUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.page-leave-active {
+  animation: fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) reverse;
 }
 </style>

@@ -1,5 +1,5 @@
 #!/bin/bash
-# 即梦AI - 快捷启动脚本
+# 雪桥AI - 快捷启动脚本
 # 同时启动后端（FastAPI）和前端（Vite）
 
 set -e
@@ -24,7 +24,7 @@ cleanup() {
 trap cleanup SIGINT SIGTERM
 
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}  即梦AI - 启动中...${NC}"
+echo -e "${GREEN}  雪桥AI - 启动中...${NC}"
 echo -e "${GREEN}========================================${NC}"
 
 # 1. 启动后端

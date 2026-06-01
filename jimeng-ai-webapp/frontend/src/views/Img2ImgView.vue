@@ -2,16 +2,23 @@
   <div class="img2img-view">
     <!-- 参考图片上传区 -->
     <div class="page-section">
-      <div class="section-title">参考图片</div>
+      <div class="section-title">
+        <el-icon :size="18"><Upload /></el-icon>
+        参考图片
+      </div>
       <ImageUploader @uploaded="handleImageUploaded" @removed="handleImageRemoved" />
       <div v-if="!referenceImagePath && generationStore.isGenerating" class="upload-warning">
+        <el-icon :size="14"><WarningFilled /></el-icon>
         请先上传参考图片
       </div>
     </div>
 
     <!-- 参数设置区 -->
     <div class="page-section">
-      <div class="section-title">生成参数</div>
+      <div class="section-title">
+        <el-icon :size="18"><Setting /></el-icon>
+        生成参数
+      </div>
 
       <el-form label-position="top">
         <el-form-item label="正向提示词" required>
@@ -37,14 +44,12 @@
         </el-form-item>
 
         <el-form-item label="图片尺寸">
-          <div class="size-chips">
-            <el-radio-group v-model="form.image_size" class="size-group">
-              <el-radio-button value="1024x1024" size="small">1:1 方图</el-radio-button>
-              <el-radio-button value="1920x1080" size="small">16:9 横图</el-radio-button>
-              <el-radio-button value="1080x1920" size="small">9:16 竖图</el-radio-button>
-              <el-radio-button value="1280x960" size="small">4:3 横图</el-radio-button>
-            </el-radio-group>
-          </div>
+          <el-radio-group v-model="form.image_size" class="size-group">
+            <el-radio-button value="1024x1024">1:1 方图</el-radio-button>
+            <el-radio-button value="1920x1080">16:9 横图</el-radio-button>
+            <el-radio-button value="1080x1920">9:16 竖图</el-radio-button>
+            <el-radio-button value="1280x960">4:3 横图</el-radio-button>
+          </el-radio-group>
         </el-form-item>
 
         <el-row :gutter="16">
@@ -89,15 +94,19 @@
             @click="generate"
             class="generate-btn"
           >
-            {{ generationStore.isGenerating ? '生成中...' : '✨ 生成图片' }}
+            <el-icon v-if="!generationStore.isGenerating" :size="18"><MagicStick /></el-icon>
+            {{ generationStore.isGenerating ? 'AI 生成中...' : '开始生成' }}
           </el-button>
         </el-form-item>
       </el-form>
     </div>
 
     <!-- 结果区 -->
-    <div class="page-section" v-if="generationStore.result">
-      <div class="section-title">生成结果</div>
+    <div class="page-section result-section" v-if="generationStore.result">
+      <div class="section-title">
+        <el-icon :size="18"><PictureFilled /></el-icon>
+        生成结果
+      </div>
       <GenerationResult :images="generationStore.result.images || []" />
     </div>
 
@@ -119,6 +128,7 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
+import { Setting, MagicStick, PictureFilled, Upload, WarningFilled } from '@element-plus/icons-vue'
 import { useGenerationStore } from '@/stores/generation'
 import ImageUploader from '@/components/ImageUploader.vue'
 import GenerationResult from '@/components/GenerationResult.vue'
@@ -167,15 +177,44 @@ async function generate() {
 </script>
 
 <style scoped>
+.img2img-view {
+  animation: fadeInUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.size-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .upload-warning {
-  color: #E6A23C;
+  color: var(--warning);
   font-size: 13px;
-  margin-top: 8px;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
 }
 
 .generate-btn {
   width: 100%;
-  height: 48px;
+  height: 52px;
   font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: var(--radius-md);
+  background: var(--primary-gradient) !important;
+  border: none !important;
+  transition: all var(--transition-base);
+}
+
+.generate-btn:hover {
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  transform: translateY(-2px);
+}
+
+.result-section {
+  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>

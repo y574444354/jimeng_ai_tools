@@ -1,14 +1,20 @@
 <template>
   <div class="inpaint-view">
-    <!-- 参考图片上传 -->
+    <!-- 画布上传区 -->
     <div class="page-section">
-      <div class="section-title">上传图片并标记重绘区域</div>
+      <div class="section-title">
+        <el-icon :size="18"><EditPen /></el-icon>
+        上传图片并标记重绘区域
+      </div>
       <InpaintCanvas ref="inpaintCanvasRef" @mask-ready="handleMaskReady" />
     </div>
 
     <!-- 参数设置区 -->
     <div class="page-section">
-      <div class="section-title">生成参数</div>
+      <div class="section-title">
+        <el-icon :size="18"><Setting /></el-icon>
+        生成参数
+      </div>
 
       <el-form label-position="top">
         <el-form-item label="描述提示词" required>
@@ -55,15 +61,19 @@
             @click="generate"
             class="generate-btn"
           >
-            {{ generationStore.isGenerating ? '生成中...' : '✨ 开始重绘' }}
+            <el-icon v-if="!generationStore.isGenerating" :size="18"><MagicStick /></el-icon>
+            {{ generationStore.isGenerating ? 'AI 重绘中...' : '开始重绘' }}
           </el-button>
         </el-form-item>
       </el-form>
     </div>
 
     <!-- 结果区 -->
-    <div class="page-section" v-if="generationStore.result">
-      <div class="section-title">生成结果</div>
+    <div class="page-section result-section" v-if="generationStore.result">
+      <div class="section-title">
+        <el-icon :size="18"><PictureFilled /></el-icon>
+        生成结果
+      </div>
       <GenerationResult :images="generationStore.result.images || []" />
     </div>
 
@@ -85,6 +95,7 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
+import { Setting, MagicStick, PictureFilled, EditPen } from '@element-plus/icons-vue'
 import { useGenerationStore } from '@/stores/generation'
 import InpaintCanvas from '@/components/InpaintCanvas.vue'
 import GenerationResult from '@/components/GenerationResult.vue'
@@ -105,6 +116,8 @@ const form = reactive({
 
 function handleMaskReady(path: string) {
   maskImagePath.value = path
+  imageReady.value = true
+  originalImagePath.value = inpaintCanvasRef.value?.getOriginalImagePath() || ''
 }
 
 async function generate() {
@@ -112,12 +125,10 @@ async function generate() {
   generationStore.reset()
 
   try {
-    // 获取遮罩图
     const canvas = inpaintCanvasRef.value
     if (!canvas) return
 
     const maskDataUrl = canvas.getMaskDataUrl()
-    // 将遮罩图上传到服务器
     const blob = await (await fetch(maskDataUrl)).blob()
     const file = new File([blob], 'mask.png', { type: 'image/png' })
     const { uploadImage } = await import('@/api/upload')
@@ -141,9 +152,28 @@ async function generate() {
 </script>
 
 <style scoped>
+.inpaint-view {
+  animation: fadeInUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .generate-btn {
   width: 100%;
-  height: 48px;
+  height: 52px;
   font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: var(--radius-md);
+  background: var(--primary-gradient) !important;
+  border: none !important;
+  transition: all var(--transition-base);
+}
+
+.generate-btn:hover {
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  transform: translateY(-2px);
+}
+
+.result-section {
+  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>

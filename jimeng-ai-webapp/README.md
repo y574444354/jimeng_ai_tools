@@ -1,6 +1,6 @@
-# 即梦AI图片生成系统
+# 雪桥AI图片生成系统
 
-基于 **火山引擎即梦AI API** 的 Web 应用，支持文生图、图生图、局部重绘等 AI 图片生成功能。
+基于 **火山引擎雪桥AI API** 的 Web 应用，支持文生图、图生图、局部重绘等 AI 图片生成功能。
 
 ## 功能特性
 
@@ -19,7 +19,7 @@
 | SQLAlchemy 2.0 | ORM（对象关系映射） |
 | SQLite | 数据库 |
 | Pydantic | 数据校验与序列化 |
-| volcengine-python-sdk | 即梦AI SDK |
+| volcengine-python-sdk | 雪桥AI SDK |
 | Uvicorn | ASGI 服务器 |
 
 ### 前端
@@ -84,7 +84,7 @@ jimeng-ai-webapp/
 │   │   │   ├── file_service.py      # 文件管理服务
 │   │   │   └── history_service.py   # 历史记录管理
 │   │   └── integration/            # 第三方集成
-│   │       └── jimeng_client.py    # 即梦AI API 客户端
+│   │       └── jimeng_client.py    # 雪桥AI API 客户端
 │   ├── main.py                     # FastAPI 应用启动入口
 │   ├── .env                        # 环境变量配置（AK/SK）
 │   ├── requirements.txt
@@ -100,7 +100,7 @@ jimeng-ai-webapp/
 
 1. **Python 3.11** 或更高版本
 2. **Node.js 18** 或更高版本
-3. **火山引擎账号**（已开通即梦AI服务）
+3. **火山引擎账号**（已开通雪桥AI服务）
 
 ### 1. 配置 API 密钥
 
@@ -127,7 +127,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-> 后端启动会自动完成：AK/SK 校验 → 即梦AI客户端初始化 → 数据库初始化 → 目录创建。  
+> 后端启动会自动完成：AK/SK 校验 → 雪桥AI客户端初始化 → 数据库初始化 → 目录创建。  
 > 若 AK/SK 未配置，启动时会打印错误提示并退出。
 
 ### 3. 启动前端开发服务器

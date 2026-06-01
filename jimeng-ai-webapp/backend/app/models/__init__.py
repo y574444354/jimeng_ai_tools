@@ -33,4 +33,11 @@ def init_db():
     """初始化数据库，创建所有表"""
     from app.models.generation_record import GenerationRecord  # noqa: F401
     from app.models.generated_image import GeneratedImage  # noqa: F401
+    from app.models.article import Article  # noqa: F401
+    from app.models.article_version import ArticleVersion  # noqa: F401
+    from app.models.article_source import ArticleSource  # noqa: F401
+    from app.models.category import Category  # noqa: F401
+    from app.models.tag import Tag  # noqa: F401
+    from app.models.publish_record import PublishRecord  # noqa: F401
+    from app.models.platform_account import PlatformAccount  # noqa: F401
     Base.metadata.create_all(bind=engine)
