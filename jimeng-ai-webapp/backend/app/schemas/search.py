@@ -56,3 +56,18 @@ class SourceResponse(BaseModel):
     full_content: Optional[str] = None
     source_type: str = "web_search"
     created_at: Optional[str] = None
+
+
+# ========== 网页抓取 ==========
+
+class WebFetchRequest(BaseModel):
+    """网页内容抓取请求"""
+    url: str = Field(..., min_length=1, max_length=2048, description="目标网页地址")
+    use_browser: bool = Field(default=False, description="是否使用浏览器引擎")
+
+
+class WebFetchResponse(BaseModel):
+    """网页内容抓取响应"""
+    url: str
+    content: str = ""
+    content_length: int = 0

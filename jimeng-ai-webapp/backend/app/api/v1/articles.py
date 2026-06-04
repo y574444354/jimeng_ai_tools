@@ -119,7 +119,8 @@ async def generate_article_content(
     if not sources:
         return success_response(data=None, message="暂无素材，请先添加搜索素材")
     # AI生成
-    generated = ai_writer_service.generate_article(
+    generated = await ai_writer_service.generate_article(
+        db=db,
         query=request.query,
         sources=sources,
         style=request.style,

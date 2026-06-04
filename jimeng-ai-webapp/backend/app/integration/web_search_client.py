@@ -1,10 +1,11 @@
 """
 全网信息搜索客户端
-基于AI联网搜索能力（WebSearch/WebFetch），封装为后端可调用的接口
+基于 DuckDuckGo 搜索引擎（ddgs 库），封装为后端可调用的接口
 """
 import logging
 from typing import List, Optional
 from dataclasses import dataclass, field
+from ddgs import DDGS
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -22,9 +23,7 @@ class SearchResult:
 class WebSearchClient:
     """全网信息搜索客户端
 
-    封装AI联网搜索能力，作为后端服务层的搜索基础设施。
-    搜索和内容抓取依赖AI运行时的WebSearch和WebFetch工具，
-    这些工具在系统中以函数调用的方式暴露给业务逻辑层。
+    封装 DuckDuckGo 搜索能力，作为后端服务层的搜索基础设施。
     """
 
     def __init__(self):
@@ -43,34 +42,39 @@ class WebSearchClient:
         Returns:
             标准化搜索结果列表
         """
+        max_results = min(max(max_results, 1), self.max_results)
         logger.info(f"网络搜索: query='{query}', max_results={max_results}, language={language}")
-        # 网络搜索由调用方（search_service）通过AI的WebSearch能力完成
-        # 本方法定义接口规范，实际调用由上层编排
-        return []
 
-    def fetch_content(self, url: str) -> str:
-        """获取网页完整内容
+        try:
+            results: List[SearchResult] = []
+            with DDGS() as ddgs:
+                region = "cn-zh" if language == "zh" else "wt-wt"
+                for r in ddgs.text(
+                    query,
+                    region=region,
+                    max_results=max_results,
+                    backend="yandex",
+                ):
+                    results.append(SearchResult(
+                        title=r.get("title", ""),
+                        url=r.get("href", ""),
+                        snippet=r.get("body", ""),
+                        content="",
+                    ))
+            logger.info(f"搜索完成: 找到 {len(results)} 条结果")
+            return results
+        except Exception as e:
+            logger.error(f"搜索失败: {str(e)}", exc_info=True)
+            return []
 
-        Args:
-            url: 目标网页URL
-
-        Returns:
-            提取的网页正文内容
-        """
-        logger.info(f"抓取网页内容: url='{url}'")
-        # 内容抓取由调用方通过AI的WebFetch能力完成
-        return ""
+    def fetch_content(self, url: str, use_browser: bool = False) -> str:
+        """获取网页完整内容"""
+        logger.info(f"抓取网页内容: url='{url}', use_browser={use_browser}")
+        from app.integration.web_content_fetcher import web_content_fetcher
+        return web_content_fetcher.fetch(url, use_browser=use_browser)
 
     def search_and_extract(self, query: str, max_results: int = 5) -> List[SearchResult]:
-        """搜索并提取内容（搜索+抓取二合一）
-
-        Args:
-            query: 搜索关键词
-            max_results: 最大搜索结果数
-
-        Returns:
-            包含完整内容的搜索结果列表
-        """
+        """搜索并提取内容（搜索+抓取二合一）"""
         results = self.search(query, max_results)
         for r in results:
             if r.url:

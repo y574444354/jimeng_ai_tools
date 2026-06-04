@@ -12,15 +12,29 @@
       <a class="card-url" v-if="result.url" :href="result.url" target="_blank" @click.stop>
         {{ result.url }}
       </a>
+      <div class="card-actions" v-if="result.url" @click.stop>
+        <el-button text size="small" type="primary" :icon="Download" :loading="fetching" @click="handleFetch">
+          {{ fetching ? '抓取中...' : '抓取全文' }}
+        </el-button>
+        <span v-if="fetchedContent" class="fetched-badge">
+          <el-icon :size="12"><CircleCheckFilled /></el-icon>
+          已抓取 {{ fetchedLength }} 字
+        </span>
+      </div>
+      <div class="card-content-preview" v-if="showPreview">
+        <p>{{ fetchedPreview }}</p>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { CircleCheck, CircleCheckFilled } from '@element-plus/icons-vue'
-import type { SearchResult } from '@/api/search'
+import { ref, computed } from 'vue'
+import { CircleCheck, CircleCheckFilled, Download } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import { fetchWebContent, type SearchResult } from '@/api/search'
 
-defineProps<{
+const props = defineProps<{
   result: SearchResult
   selected: boolean
 }>()
@@ -28,6 +42,34 @@ defineProps<{
 defineEmits<{
   (e: 'toggle'): void
 }>()
+
+const fetching = ref(false)
+const fetchedContent = ref('')
+
+const fetchedLength = computed(() => fetchedContent.value.length)
+const showPreview = computed(() => fetchedContent.value.length > 0)
+const fetchedPreview = computed(() => {
+  const text = fetchedContent.value
+  return text.length > 300 ? text.slice(0, 300) + '...' : text
+})
+
+async function handleFetch() {
+  if (!props.result.url) return
+  fetching.value = true
+  try {
+    const result = await fetchWebContent(props.result.url)
+    fetchedContent.value = result.content || ''
+    if (fetchedContent.value) {
+      ElMessage.success(`已抓取 ${fetchedContent.value.length} 字`)
+    } else {
+      ElMessage.warning('未抓取到有效内容，可尝试浏览器模式')
+    }
+  } catch (e: any) {
+    ElMessage.error(e?.message || '抓取失败')
+  } finally {
+    fetching.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -99,5 +141,36 @@ defineEmits<{
 
 .card-url:hover {
   color: var(--primary);
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.fetched-badge {
+  font-size: 11px;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.card-content-preview {
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--bg-page);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.card-content-preview p {
+  margin: 0;
 }
 </style>

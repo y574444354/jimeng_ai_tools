@@ -34,3 +34,15 @@ export async function summarizeSearch(data: {
 }) {
   return request.post('/search/summarize', data)
 }
+
+export interface FetchContentResult {
+  url: string
+  content: string
+  content_length: number
+}
+
+export async function fetchWebContent(url: string, useBrowser: boolean = false): Promise<FetchContentResult> {
+  return request
+    .post('/search/fetch-content', { url, use_browser: useBrowser })
+    .then((res: any) => res.data)
+}

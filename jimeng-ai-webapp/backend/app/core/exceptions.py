@@ -55,12 +55,15 @@ async def app_exception_handler(request: Request, exc: AppException):
 
 
 async def general_exception_handler(request: Request, exc: Exception):
-    """通用异常处理"""
+    """通用异常处理 — 不暴露内部异常详情给客户端"""
+    import logging
+    _logger = logging.getLogger(__name__)
+    _logger.exception("未捕获的异常")
     return JSONResponse(
         status_code=HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "code": 99999,
-            "message": f"服务器内部错误: {str(exc)}",
+            "message": "服务器内部错误，请稍后重试",
             "data": None,
         },
     )

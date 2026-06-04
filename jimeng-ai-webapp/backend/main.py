@@ -21,6 +21,7 @@ from app.api.v1.categories import router as categories_router
 from app.api.v1.tags import router as tags_router
 from app.api.v1.search import router as search_router
 from app.api.v1.publish import router as publish_router
+from app.api.v1.prompts import router as prompts_router
 from app.models import init_db
 from app.integration.jimeng_client import jimeng_client
 
@@ -53,6 +54,7 @@ api_router.include_router(categories_router, tags=["分类管理"])
 api_router.include_router(tags_router, tags=["标签管理"])
 api_router.include_router(search_router, tags=["智能搜索"])
 api_router.include_router(publish_router, tags=["发布管理"])
+api_router.include_router(prompts_router, tags=["Prompt智能助手"])
 app.include_router(api_router)
 
 # 挂载静态文件服务（用于访问生成的图片）

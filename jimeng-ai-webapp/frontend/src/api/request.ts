@@ -1,5 +1,7 @@
 import axios from 'axios'
 
+const TOKEN_KEY = 'xueqiao_token'
+
 const request = axios.create({
   baseURL: '/api/v1',
   timeout: 120000,
@@ -8,9 +10,13 @@ const request = axios.create({
   },
 })
 
-// 请求拦截器
+// 请求拦截器 — 自动注入 token
 request.interceptors.request.use(
   (config) => {
+    const token = localStorage.getItem(TOKEN_KEY)
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
     return config
   },
   (error) => {
@@ -18,7 +24,6 @@ request.interceptors.request.use(
   }
 )
 
-// 响应拦截器
 // 响应拦截器
 request.interceptors.response.use(
   (response) => {
@@ -30,6 +35,15 @@ request.interceptors.response.use(
     return res
   },
   (error) => {
+    // 401 未授权 — 清除 token 并跳转到登录页
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem(TOKEN_KEY)
+      // 避免在登录页重复跳转
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+    }
+
     if (error.code === 'ECONNABORTED') {
       console.error('请求超时')
       return Promise.reject(new Error('请求超时，请稍后重试'))

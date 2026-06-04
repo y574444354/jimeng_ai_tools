@@ -5,6 +5,7 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import 'element-plus/dist/index.css'
 import App from './App.vue'
 import router from './router'
+import { useUserStore } from './stores/user'
 import './styles/global.css'
 
 const app = createApp(App)
@@ -18,5 +19,9 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 app.use(pinia)
 app.use(router)
 app.use(ElementPlus, { locale: undefined })
+
+// 从 localStorage 恢复登录态
+const userStore = useUserStore()
+userStore.initFromStorage()
 
 app.mount('#app')

@@ -48,6 +48,14 @@
           <h1 class="header-title">{{ appStore.currentPageTitle }}</h1>
         </div>
         <div class="header-right">
+          <div class="user-section">
+            <el-icon :size="16"><User /></el-icon>
+            <span class="user-name">{{ userStore.userInfo?.username || '未知用户' }}</span>
+            <el-button text size="small" class="logout-btn" @click="handleLogout">
+              <el-icon :size="14"><SwitchButton /></el-icon>
+              退出
+            </el-button>
+          </div>
           <StatusIndicator />
         </div>
       </header>
@@ -65,9 +73,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
+import { useUserStore } from '@/stores/user'
 import {
   Edit,
   Picture,
@@ -80,13 +89,23 @@ import {
   Notebook,
   EditPen,
   Promotion,
+  User,
+  SwitchButton,
+  Setting,
 } from '@element-plus/icons-vue'
 import StatusIndicator from '@/components/StatusIndicator.vue'
 
 const appStore = useAppStore()
+const userStore = useUserStore()
 const route = useRoute()
+const router = useRouter()
 
 const currentRoute = computed(() => route.path)
+
+function handleLogout() {
+  userStore.logout()
+  router.push('/login')
+}
 
 const menuItems = [
   { path: '/text2img', label: '文生图', icon: Edit },
@@ -98,6 +117,7 @@ const menuItems = [
   { path: '/articles', label: '文章管理', icon: Notebook },
   { path: '/articles/new', label: '写文章', icon: EditPen },
   { path: '/publish', label: '发布中心', icon: Promotion },
+  { path: '/settings', label: '系统设置', icon: Setting },
 ]
 
 watch(
@@ -110,11 +130,24 @@ watch(
   { immediate: true }
 )
 
-onMounted(() => {
+let apiStatusTimer: ReturnType<typeof setInterval> | null = null
+
+onMounted(async () => {
+  // 如果还没有用户信息，则获取
+  if (userStore.isLoggedIn && !userStore.userInfo) {
+    await userStore.fetchUserInfo()
+  }
   appStore.checkApiStatus()
-  setInterval(() => {
+  apiStatusTimer = setInterval(() => {
     appStore.checkApiStatus()
   }, 30000)
+})
+
+onUnmounted(() => {
+  if (apiStatusTimer) {
+    clearInterval(apiStatusTimer)
+    apiStatusTimer = null
+  }
 })
 </script>
 

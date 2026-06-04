@@ -7,3 +7,9 @@ volcengine-python-sdk==1.0.9
 python-dotenv==1.0.1
 python-multipart==0.0.19
 aiofiles==24.1.0
+python-jose[cryptography]==3.3.0
+bcrypt==5.0.0
+httpx==0.28.1
+beautifulsoup4==4.12.3
+lxml==6.0.2
+ddgs==9.14.4

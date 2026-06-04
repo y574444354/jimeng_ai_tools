@@ -18,14 +18,50 @@
 
       <el-form label-position="top">
         <el-form-item label="描述提示词" required>
-          <el-input
-            v-model="form.prompt"
-            type="textarea"
-            :rows="4"
-            placeholder="描述要重绘的区域内容..."
-            maxlength="1000"
-            show-word-limit
-          />
+          <div class="prompt-input-wrapper">
+            <el-input
+              v-model="form.prompt"
+              type="textarea"
+              :rows="4"
+              placeholder="描述要重绘的区域内容..."
+              maxlength="1000"
+              show-word-limit
+            />
+            <div class="prompt-actions">
+              <el-dropdown @command="handleOptimize" trigger="click">
+                <el-button
+                  type="primary"
+                  plain
+                  size="small"
+                  :loading="optimizing"
+                  :disabled="!form.prompt.trim()"
+                >
+                  <el-icon :size="14"><MagicStick /></el-icon>
+                  AI 优化
+                  <el-icon :size="12"><ArrowDown /></el-icon>
+                </el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="optimize">
+                      <el-icon><MagicStick /></el-icon>
+                      智能优化
+                      <div class="dropdown-desc">补充细节，提升画质</div>
+                    </el-dropdown-item>
+                    <el-dropdown-item command="expand">
+                      <el-icon><Document /></el-icon>
+                      场景扩写
+                      <div class="dropdown-desc">展开叙事，丰富场景</div>
+                    </el-dropdown-item>
+                    <el-dropdown-item command="translate">
+                      <el-icon><Connection /></el-icon>
+                      翻译英文
+                      <div class="dropdown-desc">中译英，适配生图</div>
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
+          </div>
         </el-form-item>
 
         <el-form-item label="负面提示词">
@@ -95,11 +131,12 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { Setting, MagicStick, PictureFilled, EditPen } from '@element-plus/icons-vue'
+import { Setting, MagicStick, PictureFilled, EditPen, ArrowDown, Document, Connection } from '@element-plus/icons-vue'
 import { useGenerationStore } from '@/stores/generation'
 import InpaintCanvas from '@/components/InpaintCanvas.vue'
 import GenerationResult from '@/components/GenerationResult.vue'
 import LoadingOverlay from '@/components/LoadingOverlay.vue'
+import { usePromptOptimize } from '@/composables/usePromptOptimize'
 
 const generationStore = useGenerationStore()
 const inpaintCanvasRef = ref<InstanceType<typeof InpaintCanvas> | null>(null)
@@ -113,6 +150,11 @@ const form = reactive({
   cfg_scale: 7,
   seed: 0,
 })
+
+const { optimizing, handleOptimize } = usePromptOptimize(
+  () => form.prompt,
+  (v) => { form.prompt = v },
+)
 
 function handleMaskReady(path: string) {
   maskImagePath.value = path
@@ -154,6 +196,23 @@ async function generate() {
 <style scoped>
 .inpaint-view {
   animation: fadeInUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prompt-input-wrapper {
+  width: 100%;
+}
+
+.prompt-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  gap: 8px;
+}
+
+.dropdown-desc {
+  font-size: 11px;
+  color: var(--el-text-color-secondary);
+  margin-top: 2px;
 }
 
 .generate-btn {

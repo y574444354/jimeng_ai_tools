@@ -40,4 +40,6 @@ def init_db():
     from app.models.tag import Tag  # noqa: F401
     from app.models.publish_record import PublishRecord  # noqa: F401
     from app.models.platform_account import PlatformAccount  # noqa: F401
+    from app.models.user import User  # noqa: F401
+    from app.models.ai_model_config import AIModelConfig  # noqa: F401
     Base.metadata.create_all(bind=engine)

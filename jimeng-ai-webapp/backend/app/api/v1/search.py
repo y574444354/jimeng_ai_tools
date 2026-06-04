@@ -28,17 +28,19 @@ async def search_web(request: WebSearchRequest):
 
 
 @router.post("/summarize")
-async def summarize_search_results(request: SummarizeRequest):
+async def summarize_search_results(request: SummarizeRequest, db: Session = Depends(get_db)):
     """AI总结搜索结果，生成文章大纲和正文"""
     # 生成大纲
-    outline_result = ai_writer_service.generate_outline(
+    outline_result = await ai_writer_service.generate_outline(
+        db=db,
         query=request.query,
         sources=[s.model_dump() for s in request.sources],
         style=request.style,
     )
     # 如果素材足够，生成完整正文
     if request.sources:
-        article_result = ai_writer_service.generate_article(
+        article_result = await ai_writer_service.generate_article(
+            db=db,
             query=request.query,
             sources=[s.model_dump() for s in request.sources],
             outline=outline_result.get("outline", []),

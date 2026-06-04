@@ -38,3 +38,21 @@ export async function queryStatus(generationId: string) {
 export async function getResult(generationId: string) {
   return request.get(`/generations/${generationId}`)
 }
+
+// ========== Prompt 智能助手 ==========
+
+export interface PromptOptimizeParams {
+  prompt: string
+  action?: 'optimize' | 'expand' | 'translate'
+  style?: string
+}
+
+export interface PromptOptimizeResult {
+  original_prompt: string
+  optimized_prompt: string
+  action: string
+}
+
+export async function optimizePrompt(params: PromptOptimizeParams) {
+  return request.post('/prompts/optimize', params)
+}
