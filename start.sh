@@ -30,7 +30,7 @@ echo -e "${GREEN}========================================${NC}"
 # 1. 启动后端
 echo -e "\n${YELLOW}[1/2] 启动后端 (FastAPI :8000)...${NC}"
 cd "$BACKEND_DIR"
-python main.py &
+venv/bin/python main.py &
 BACKEND_PID=$!
 sleep 2
 
@@ -43,14 +43,14 @@ else
 fi
 
 # 2. 启动前端
-echo -e "\n${YELLOW}[2/2] 启动前端 (Vite :5173)...${NC}"
+echo -e "\n${YELLOW}[2/2] 启动前端 (Vite :9701)...${NC}"
 cd "$FRONTEND_DIR"
 npm run dev &
 FRONTEND_PID=$!
 sleep 3
 
 if kill -0 $FRONTEND_PID 2>/dev/null; then
-    echo -e "${GREEN}  ✓ 前端已启动: http://localhost:5173${NC}"
+    echo -e "${GREEN}  ✓ 前端已启动: http://localhost:9701${NC}"
 else
     echo -e "${RED}  ✗ 前端启动失败！${NC}"
     cleanup
@@ -59,7 +59,7 @@ fi
 
 echo -e "\n${GREEN}========================================${NC}"
 echo -e "${GREEN}  全部启动完成！${NC}"
-echo -e "${GREEN}  前端: http://localhost:5173${NC}"
+echo -e "${GREEN}  前端: http://localhost:9701${NC}"
 echo -e "${GREEN}  后端: http://localhost:8000${NC}"
 echo -e "${GREEN}  API文档: http://localhost:8000/docs${NC}"
 echo -e "${GREEN}========================================${NC}"
