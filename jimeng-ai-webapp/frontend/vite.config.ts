@@ -11,7 +11,8 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 9701,
+    port: 80,
+    allowedHosts: ['www.lsophia.cloud', 'lsophia.cloud'],
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:8000',

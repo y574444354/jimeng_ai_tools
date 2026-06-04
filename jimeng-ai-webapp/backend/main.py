@@ -22,7 +22,10 @@ from app.api.v1.tags import router as tags_router
 from app.api.v1.search import router as search_router
 from app.api.v1.publish import router as publish_router
 from app.api.v1.prompts import router as prompts_router
-from app.models import init_db
+from app.api.v1.auth import router as auth_router
+from app.api.v1.settings import router as settings_router
+from app.models import init_db, get_db
+from app.services.auth_service import auth_service
 from app.integration.jimeng_client import jimeng_client
 
 app = FastAPI(
@@ -55,6 +58,8 @@ api_router.include_router(tags_router, tags=["标签管理"])
 api_router.include_router(search_router, tags=["智能搜索"])
 api_router.include_router(publish_router, tags=["发布管理"])
 api_router.include_router(prompts_router, tags=["Prompt智能助手"])
+api_router.include_router(auth_router, tags=["用户认证"])
+api_router.include_router(settings_router, tags=["系统设置"])
 app.include_router(api_router)
 
 # 挂载静态文件服务（用于访问生成的图片）
@@ -97,6 +102,15 @@ async def startup_event():
         logger.info("✓ 数据库初始化成功")
     except Exception as e:
         logger.error(f"✗ 数据库初始化失败: {str(e)}")
+        sys.exit(1)
+
+    # 5. 确保默认管理员账号存在
+    try:
+        db = next(get_db())
+        auth_service.ensure_default_admin(db)
+        logger.info("✓ 默认管理员账号已就绪")
+    except Exception as e:
+        logger.error(f"✗ 管理员账号初始化失败: {str(e)}")
         sys.exit(1)
 
     # 4. 创建必要的目录

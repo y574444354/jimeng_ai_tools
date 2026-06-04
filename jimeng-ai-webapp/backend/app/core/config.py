@@ -12,6 +12,14 @@ class Settings(BaseSettings):
     APP_PORT: int = 8000
     APP_DEBUG: bool = True
 
+    # JWT 配置
+    JWT_SECRET_KEY: str = "change-me-to-a-random-secret-key"
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24小时
+
+    # 管理员默认密码（首次启动时使用，登录后请修改）
+    ADMIN_DEFAULT_PASSWORD: str = ""
+
     # 数据库
     DATABASE_URL: str = "sqlite:///./data/jimeng-ai.db"
 
