@@ -277,4 +277,75 @@ async function generate() {
 .result-section {
   animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* ======== 响应式 ======== */
+/* 移动端：单列布局，减padding，全宽元素 */
+@media (max-width: 767px) {
+  /* 减少动画开销 */
+  .img2img-view {
+    animation: none;
+  }
+  .result-section {
+    animation: none;
+  }
+
+  /* 区块padding收缩 */
+  :deep(.page-section) {
+    padding: 16px;
+  }
+
+  /* 表单内部间距收窄 */
+  :deep(.el-form-item) {
+    margin-bottom: 14px;
+  }
+
+  /* 三列栅格强制全宽 */
+  :deep(.el-col) {
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+
+  /* 尺寸选择组改为纵向排列 */
+  .size-group {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  :deep(.size-group .el-radio-button) {
+    width: 100%;
+  }
+
+  :deep(.size-group .el-radio-button__inner) {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* 生成按钮触摸区域 */
+  .generate-btn {
+    height: 48px;
+    font-size: 15px;
+  }
+
+  /* AI优化按钮区域靠左 */
+  .prompt-actions {
+    justify-content: flex-start;
+  }
+
+  /* 上传提示文字缩小 */
+  .upload-warning {
+    font-size: 12px;
+  }
+}
+
+/* 平板端：适度间距 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  :deep(.page-section) {
+    padding: 20px;
+  }
+
+  :deep(.el-col) {
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+}
 </style>

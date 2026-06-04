@@ -314,4 +314,30 @@ onMounted(() => {
   justify-content: center;
   margin-top: 20px;
 }
+
+/* ======== 响应式 ======== */
+@media (max-width: 767px) {
+  .record-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+  .record-action {
+    align-self: flex-end;
+  }
+  .account-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+  .account-info {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .record-meta {
+    flex-wrap: wrap;
+  }
+}
 </style>

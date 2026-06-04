@@ -173,4 +173,29 @@ async function handleFetch() {
 .card-content-preview p {
   margin: 0;
 }
+
+/* ======== 响应式 ======== */
+@media (max-width: 767px) {
+  .search-result-card {
+    padding: 10px;
+    gap: 8px;
+  }
+  .card-title {
+    font-size: 13px;
+  }
+  .card-snippet {
+    font-size: 11px;
+  }
+  .card-actions {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .card-content-preview {
+    max-height: 80px;
+    padding: 6px;
+  }
+  .card-url {
+    font-size: 10px;
+  }
+}
 </style>

@@ -233,4 +233,77 @@ async function createFromSearch() {
 }
 .empty-hint p { font-size: 15px; margin-top: 12px; }
 .empty-hint .sub { font-size: 13px; color: var(--text-secondary); }
+
+/* ======== 响应式 ======== */
+/* 移动端：工具栏垂直排列，总结区padding缩小 */
+@media (max-width: 767px) {
+  /* 减少动画开销 */
+  .search-view {
+    animation: none;
+  }
+
+  /* 区块padding收缩 */
+  :deep(.page-section) {
+    padding: 16px;
+  }
+
+  /* 搜索输入区间距收窄 */
+  .search-input-area {
+    margin-bottom: 16px;
+  }
+
+  /* 搜索结果工具栏改为垂直排列 */
+  .results-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .results-toolbar .el-button {
+    width: 100%;
+  }
+
+  /* 总结区padding缩小 */
+  .summarize-section {
+    padding: 16px;
+    margin-top: 20px;
+  }
+
+  /* 总结区头部 */
+  .summarize-header {
+    font-size: 14px;
+    margin-bottom: 14px;
+  }
+
+  /* 标题tag全宽 */
+  .title-tag {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* 操作区按钮全宽 */
+  .action-area .el-button {
+    width: 100%;
+  }
+
+  /* 空状态padding缩小 */
+  .empty-hint {
+    padding: 36px 0;
+  }
+  .empty-hint p {
+    font-size: 14px;
+  }
+}
+
+/* 平板端：适度间距 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  :deep(.page-section) {
+    padding: 20px;
+  }
+
+  /* 总结区适度padding */
+  .summarize-section {
+    padding: 20px;
+  }
+}
 </style>

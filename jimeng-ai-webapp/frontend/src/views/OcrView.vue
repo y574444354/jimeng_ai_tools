@@ -298,4 +298,86 @@ async function copyRawText() {
   margin-right: 12px;
   word-break: break-all;
 }
+
+/* ======== 响应式 ======== */
+/* 移动端：行详情垂直排列，标题字号缩小 */
+@media (max-width: 767px) {
+  /* 减少动画开销 */
+  .ocr-view {
+    animation: none;
+  }
+  .result-section {
+    animation: none;
+  }
+
+  /* 区块padding收缩 */
+  :deep(.page-section) {
+    padding: 16px;
+  }
+
+  /* 识别按钮触摸区域 */
+  .recognize-btn {
+    height: 48px;
+    font-size: 15px;
+  }
+
+  /* 标题字号缩小 */
+  .title-text {
+    font-size: 17px;
+  }
+
+  /* 正文字号缩小 */
+  .body-text {
+    font-size: 14px;
+  }
+
+  /* 行详情改为垂直排列 */
+  .line-detail {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 8px 10px;
+  }
+
+  .line-text {
+    margin-right: 0;
+  }
+
+  /* 原始文本区padding收紧 */
+  .raw-text-section {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+  }
+
+  /* 结构化区域间距收紧 */
+  .ocr-section {
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+  }
+
+  /* 结构化标签间距 */
+  .structured-label {
+    margin-bottom: 10px;
+  }
+
+  /* 复制按钮文字隐藏 */
+  .copy-btn {
+    font-size: 0;
+  }
+  .copy-btn .el-icon {
+    font-size: 16px !important;
+  }
+}
+
+/* 平板端：适度间距 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  :deep(.page-section) {
+    padding: 20px;
+  }
+
+  /* 标题字号适度调小 */
+  .title-text {
+    font-size: 18px;
+  }
+}
 </style>

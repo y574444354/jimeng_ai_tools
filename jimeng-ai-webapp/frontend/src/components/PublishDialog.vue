@@ -239,4 +239,22 @@ async function doPublish() {
   color: var(--text-placeholder);
   padding: 8px 0;
 }
+
+/* ======== 响应式 ======== */
+@media (max-width: 767px) {
+  :deep(.el-dialog) {
+    width: 95% !important;
+  }
+  .image-pick-area {
+    gap: 6px;
+  }
+  .picked-image {
+    width: 60px;
+    height: 60px;
+  }
+  .add-image-btn {
+    width: 60px;
+    height: 60px;
+  }
+}
 </style>

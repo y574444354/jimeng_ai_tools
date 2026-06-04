@@ -207,4 +207,26 @@ function formatTime(timeStr: string): string {
   border-radius: var(--radius-sm);
   word-break: break-all;
 }
+
+/* ======== 响应式 ======== */
+@media (max-width: 767px) {
+  :deep(.el-dialog) {
+    width: 95% !important;
+  }
+  .detail-images {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 2px 0;
+  }
+  .info-row {
+    padding: 6px 0;
+  }
+  .prompt-content {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+}
 </style>

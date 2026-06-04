@@ -74,11 +74,29 @@
   --sidebar-width: 232px;
   --sidebar-collapsed: 68px;
   --header-height: 60px;
+  --header-height-mobile: 52px;
 
   /* 过渡 */
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ======== 响应式断点系统 ======== */
+
+/* 平板端 (768px - 1023px)：侧边栏自动折叠 */
+@media (max-width: 1023px) {
+  :root {
+    --sidebar-width: 68px;
+  }
+}
+
+/* 移动端 (< 768px)：侧边栏隐藏，全宽布局 */
+@media (max-width: 767px) {
+  :root {
+    --sidebar-width: 0;
+    --header-height: var(--header-height-mobile);
+  }
 }
 
 /* ---- Reset ---- */
@@ -359,4 +377,250 @@ a {
   padding: 20px 24px;
   font-weight: 700;
   font-size: 16px;
+}
+
+/* ======== 响应式工具类 ======== */
+
+/* 仅移动端显示/隐藏 */
+.show-mobile { display: none !important; }
+.hide-mobile { display: flex !important; }
+
+@media (max-width: 767px) {
+  .show-mobile { display: flex !important; }
+  .hide-mobile { display: none !important; }
+}
+
+/* 仅平板端及以上显示 */
+.show-tablet-up { display: none !important; }
+
+@media (min-width: 768px) {
+  .show-tablet-up { display: flex !important; }
+}
+
+/* ======== 响应式布局覆盖 ======== */
+
+@media (max-width: 767px) {
+  /* 页面内容区内边距 */
+  .page-section {
+    padding: 16px;
+    border-radius: var(--radius-md);
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 16px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+  }
+
+  /* 移动端表单：全宽堆叠 */
+  .el-form-item {
+    margin-bottom: 14px;
+  }
+
+  /* 移动端按钮：触摸友好尺寸 */
+  .el-button--large {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+
+  /* 移动端弹窗：全屏宽度 */
+  .el-dialog {
+    width: 92vw !important;
+    max-height: 85vh;
+    margin: 5vh auto;
+    border-radius: var(--radius-md);
+  }
+
+  .el-dialog__header {
+    padding: 14px 16px;
+    font-size: 15px;
+  }
+
+  .el-dialog__body {
+    padding: 16px;
+  }
+
+  /* 移动端表格：横向滚动 */
+  .el-table {
+    font-size: 13px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 移动端输入框放大到易用尺寸 */
+  .el-input__inner,
+  .el-textarea__inner {
+    font-size: 16px !important; /* 防止iOS缩放 */
+  }
+
+  /* 移动端标签组：允许换行 */
+  .el-radio-group {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  /* 移动端选择器全宽 */
+  .el-select {
+    width: 100% !important;
+  }
+
+  /* 移动端分页器紧凑 */
+  .el-pagination {
+    padding: 8px 0;
+    font-size: 12px;
+  }
+}
+
+/* 平板端中间调整 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .page-section {
+    padding: 20px;
+  }
+
+  .el-dialog {
+    width: 85vw !important;
+    max-width: 600px;
+  }
+}
+
+/* ======== 移动端侧边栏 Overlay ======== */
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 190;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-base), visibility var(--transition-base);
+}
+
+.sidebar-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 移动端侧边栏：overlay 模式 */
+@media (max-width: 767px) {
+  .sidebar.sidebar-overlay-mode {
+    transform: translateX(-100%);
+    z-index: 200;
+    width: 260px;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .sidebar.sidebar-overlay-mode.open {
+    transform: translateX(0);
+  }
+
+  .sidebar.sidebar-overlay-mode .sidebar-logo .logo-text {
+    opacity: 1;
+    width: auto;
+    overflow: visible;
+  }
+
+  .sidebar.sidebar-overlay-mode .menu-label {
+    display: inline;
+  }
+
+  .sidebar.sidebar-overlay-mode .menu-item {
+    justify-content: flex-start;
+    padding: 10px 14px;
+  }
+}
+
+/* ======== 汉堡按钮 ======== */
+
+.hamburger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  transition: background var(--transition-fast);
+}
+
+.hamburger-btn:hover {
+  background: var(--bg-hover);
+}
+
+@media (max-width: 767px) {
+  .hamburger-btn {
+    display: flex;
+  }
+}
+
+.hamburger-line {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+  transition: all var(--transition-fast);
+}
+
+.hamburger-btn .hamburger-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hamburger-btn.open .hamburger-lines .hamburger-line:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.hamburger-btn.open .hamburger-lines .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-btn.open .hamburger-lines .hamburger-line:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ======== 触摸优化 ======== */
+
+@media (max-width: 767px) {
+  /* 增加按钮间间距 */
+  .el-button + .el-button {
+    margin-left: 8px;
+  }
+
+  /* 表单输入全宽 */
+  .el-input,
+  .el-select,
+  .el-input-number {
+    width: 100% !important;
+  }
+
+  /* 选择器下拉面板全宽 */
+  .el-select-dropdown {
+    max-width: 90vw;
+  }
+
+  /* Tooltip 在移动端使用大字号 */
+  .el-tooltip__popper {
+    font-size: 13px;
+    max-width: 80vw;
+  }
+
+  /* 消息提示靠顶 */
+  .el-message {
+    top: 8px !important;
+    min-width: auto;
+    max-width: 92vw;
+    padding: 10px 16px;
+  }
+
+  /* 卡片间距减小 */
+  .page-section + .page-section {
+    margin-top: 12px;
+  }
 }

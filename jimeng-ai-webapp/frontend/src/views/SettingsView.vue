@@ -330,4 +330,42 @@ async function handleDelete(id: string) {
   margin: 4px 0;
   font-size: 13px;
 }
+
+/* ======== 响应式 ======== */
+@media (max-width: 767px) {
+  .settings-page {
+    max-width: 100%;
+    padding: 0 4px;
+  }
+  .section {
+    padding: 12px;
+    border-radius: var(--radius-md);
+  }
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .config-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .config-table :deep(.el-table__body-wrapper) {
+    overflow-x: auto;
+  }
+  .config-table :deep(.el-table) {
+    min-width: 700px;
+  }
+  .page-title {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .settings-page {
+    max-width: 100%;
+    padding: 0 12px;
+  }
+}
 </style>

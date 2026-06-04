@@ -204,4 +204,26 @@ export default {}
 .empty-hint .sub {
   font-size: 12px;
 }
+
+/* ======== 响应式 ======== */
+@media (max-width: 767px) {
+  .search-panel {
+    padding: 10px;
+  }
+  .results-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .summarize-result {
+    padding: 12px;
+    margin-top: 16px;
+  }
+  .title-suggestions {
+    gap: 6px;
+  }
+  .empty-hint {
+    padding: 24px 0;
+  }
+}
 </style>

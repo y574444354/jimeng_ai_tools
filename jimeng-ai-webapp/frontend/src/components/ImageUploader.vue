@@ -179,4 +179,25 @@ function removeImage() {
 .remove-btn:hover {
   background: var(--danger);
 }
+
+/* ======== 响应式 ======== */
+@media (max-width: 767px) {
+  .upload-area {
+    padding: 24px 16px;
+  }
+  .upload-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 8px;
+  }
+  .upload-icon-wrapper .upload-icon {
+    font-size: 24px;
+  }
+  .upload-text {
+    font-size: 13px;
+  }
+  .upload-preview img {
+    max-height: 240px;
+  }
+}
 </style>

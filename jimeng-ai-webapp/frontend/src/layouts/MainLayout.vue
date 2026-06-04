@@ -1,7 +1,21 @@
 <template>
   <div class="app-container">
+    <!-- 移动端遮罩层 -->
+    <div
+      class="sidebar-overlay"
+      :class="{ open: appStore.mobileSidebarOpen }"
+      @click="appStore.closeMobileSidebar"
+    ></div>
+
     <!-- 侧边栏 — 浅色毛玻璃风格 -->
-    <aside class="sidebar" :class="{ collapsed: appStore.sidebarCollapsed }">
+    <aside
+      class="sidebar"
+      :class="{
+        collapsed: appStore.sidebarMode === 'collapsed',
+        'sidebar-overlay-mode': appStore.sidebarMode === 'overlay',
+        open: appStore.mobileSidebarOpen,
+      }"
+    >
       <div class="sidebar-logo">
         <div class="logo-icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -21,6 +35,7 @@
           class="menu-item"
           :class="{ active: currentRoute === item.path }"
           :title="item.label"
+          @click="handleMenuItemClick"
         >
           <el-icon class="menu-icon" :size="18">
             <component :is="item.icon" />
@@ -33,7 +48,7 @@
       <div class="sidebar-footer">
         <div class="sidebar-toggle" @click="appStore.toggleSidebar">
           <el-icon :size="16">
-            <Fold v-if="!appStore.sidebarCollapsed" />
+            <Fold v-if="appStore.sidebarMode === 'expanded'" />
             <Expand v-else />
           </el-icon>
         </div>
@@ -41,19 +56,32 @@
     </aside>
 
     <!-- 主内容区 -->
-    <div class="main-content" :class="{ expanded: appStore.sidebarCollapsed }">
+    <div class="main-content" :class="{ expanded: appStore.sidebarMode === 'collapsed', mobile: appStore.isMobile }">
       <!-- 顶部栏 — 毛玻璃 -->
       <header class="header">
         <div class="header-left">
+          <!-- 移动端汉堡按钮 -->
+          <button
+            class="hamburger-btn"
+            :class="{ open: appStore.mobileSidebarOpen }"
+            @click="appStore.toggleSidebar"
+            aria-label="切换导航菜单"
+          >
+            <span class="hamburger-lines">
+              <span class="hamburger-line"></span>
+              <span class="hamburger-line"></span>
+              <span class="hamburger-line"></span>
+            </span>
+          </button>
           <h1 class="header-title">{{ appStore.currentPageTitle }}</h1>
         </div>
         <div class="header-right">
           <div class="user-section">
             <el-icon :size="16"><User /></el-icon>
-            <span class="user-name">{{ userStore.userInfo?.username || '未知用户' }}</span>
+            <span class="user-name hide-mobile">{{ userStore.userInfo?.username || '未知用户' }}</span>
             <el-button text size="small" class="logout-btn" @click="handleLogout">
               <el-icon :size="14"><SwitchButton /></el-icon>
-              退出
+              <span class="hide-mobile">退出</span>
             </el-button>
           </div>
           <StatusIndicator />
@@ -107,6 +135,13 @@ function handleLogout() {
   router.push('/login')
 }
 
+// 移动端点击菜单项后关闭侧边栏
+function handleMenuItemClick() {
+  if (appStore.isMobile) {
+    appStore.closeMobileSidebar()
+  }
+}
+
 const menuItems = [
   { path: '/text2img', label: '文生图', icon: Edit },
   { path: '/img2img', label: '图生图', icon: Picture },
@@ -133,6 +168,9 @@ watch(
 let apiStatusTimer: ReturnType<typeof setInterval> | null = null
 
 onMounted(async () => {
+  // 初始化 resize 监听
+  appStore.initResizeListener()
+
   // 如果还没有用户信息，则获取
   if (userStore.isLoggedIn && !userStore.userInfo) {
     await userStore.fetchUserInfo()
@@ -144,6 +182,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  appStore.destroyResizeListener()
   if (apiStatusTimer) {
     clearInterval(apiStatusTimer)
     apiStatusTimer = null
@@ -172,11 +211,11 @@ onUnmounted(() => {
   left: 0;
   height: 100vh;
   z-index: 100;
-  transition: width var(--transition-slow), box-shadow var(--transition-slow);
+  transition: width var(--transition-slow), box-shadow var(--transition-slow), transform var(--transition-slow);
   overflow: hidden;
 }
 
-.sidebar:not(.collapsed) {
+.sidebar:not(.collapsed):not(.sidebar-overlay-mode) {
   box-shadow: 2px 0 24px rgba(0, 0, 0, 0.04);
 }
 
@@ -333,6 +372,10 @@ onUnmounted(() => {
   margin-left: var(--sidebar-collapsed);
 }
 
+.main-content.mobile {
+  margin-left: 0;
+}
+
 /* ======== 顶部栏 ======== */
 .header {
   height: var(--header-height);
@@ -353,6 +396,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+  flex: 1;
 }
 
 .header-title {
@@ -360,12 +405,28 @@ onUnmounted(() => {
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .header-right {
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-shrink: 0;
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+}
+
+.user-name {
+  font-size: 13px;
+  font-weight: 500;
 }
 
 /* ======== 页面内容 ======== */
@@ -380,5 +441,44 @@ onUnmounted(() => {
 }
 .page-leave-active {
   animation: fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) reverse;
+}
+
+/* ======== 响应式：平板端 ======== */
+@media (max-width: 1023px) {
+  .header {
+    padding: 0 20px;
+  }
+
+  .page-content {
+    padding: 20px;
+  }
+}
+
+/* ======== 响应式：移动端 ======== */
+@media (max-width: 767px) {
+  .sidebar {
+    transition: transform var(--transition-slow);
+  }
+
+  .header {
+    padding: 0 16px;
+    height: var(--header-height-mobile);
+  }
+
+  .header-title {
+    font-size: 16px;
+  }
+
+  .header-right {
+    gap: 10px;
+  }
+
+  .user-section {
+    gap: 4px;
+  }
+
+  .page-content {
+    padding: 16px;
+  }
 }
 </style>

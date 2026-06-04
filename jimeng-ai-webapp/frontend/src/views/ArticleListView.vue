@@ -324,4 +324,39 @@ onMounted(async () => {
   justify-content: center;
   margin-top: 20px;
 }
+
+/* ======== 响应式 ======== */
+@media (max-width: 767px) {
+  .filter-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .filter-bar > * {
+    width: 100% !important;
+  }
+  .title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .title-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .article-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .article-table-wrapper :deep(.el-table) {
+    min-width: 700px;
+  }
+  .cell-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .pagination-wrapper {
+    justify-content: flex-start;
+  }
+}
 </style>

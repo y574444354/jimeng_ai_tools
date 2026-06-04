@@ -183,4 +183,27 @@ async function handleLogin() {
 .fade-leave-to {
   opacity: 0;
 }
+
+/* ======== 响应式 ======== */
+@media (max-width: 767px) {
+  .login-card {
+    width: 90vw;
+    padding: 24px;
+    border-radius: 12px;
+  }
+  .login-title {
+    font-size: 20px;
+  }
+  .login-subtitle {
+    font-size: 13px;
+  }
+  .login-header {
+    margin-bottom: 24px;
+  }
+  .login-logo {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 12px;
+  }
+}
 </style>

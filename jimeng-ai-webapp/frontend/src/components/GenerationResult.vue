@@ -148,4 +148,18 @@ function previewImage(src: string) {
   display: flex;
   justify-content: center;
 }
+
+/* ======== 响应式 ======== */
+@media (max-width: 767px) {
+  .result-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .card-footer {
+    padding: 8px 10px;
+  }
+  .preview-dialog :deep(.el-dialog) {
+    width: 95% !important;
+  }
+}
 </style>

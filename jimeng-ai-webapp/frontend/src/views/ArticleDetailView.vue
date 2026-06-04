@@ -181,4 +181,29 @@ onMounted(async () => {
 .article-content :deep(a) { color: var(--primary); }
 .article-content :deep(code) { background: var(--bg-hover); padding: 2px 6px; border-radius: 3px; font-size: 13px; }
 .article-content :deep(strong) { font-weight: 600; }
+
+/* ======== 响应式 ======== */
+@media (max-width: 767px) {
+  .title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .title-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .article-meta {
+    gap: 6px;
+    row-gap: 8px;
+  }
+  .article-content {
+    max-width: 100%;
+    font-size: 14px;
+    padding: 0;
+  }
+  .article-content :deep(h1) { font-size: 20px; }
+  .article-content :deep(h2) { font-size: 18px; }
+  .article-content :deep(h3) { font-size: 16px; }
+}
 </style>

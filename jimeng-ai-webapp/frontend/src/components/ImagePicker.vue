@@ -150,4 +150,15 @@ onMounted(() => {
   border-top: 1px solid var(--border-light);
   margin-top: 12px;
 }
+
+/* ======== 响应式 ======== */
+@media (max-width: 767px) {
+  .picker-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .image-picker {
+    max-height: 300px;
+  }
+}
 </style>

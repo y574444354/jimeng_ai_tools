@@ -327,4 +327,37 @@ defineExpose({
 .no-image {
   padding: 16px;
 }
+
+/* ======== 响应式 ======== */
+@media (max-width: 767px) {
+  .canvas-toolbar {
+    padding: 8px 10px;
+    gap: 4px;
+  }
+  .tool-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+    gap: 3px;
+  }
+  .tool-btn span {
+    display: none;
+  }
+  .size-slider {
+    width: 56px;
+  }
+  .canvas-container {
+    padding: 10px;
+    min-height: 150px;
+  }
+  .tool-separator {
+    margin: 0 2px;
+  }
+  .tool-label {
+    font-size: 11px;
+  }
+  .size-badge {
+    font-size: 11px;
+    min-width: 28px;
+  }
+}
 </style>

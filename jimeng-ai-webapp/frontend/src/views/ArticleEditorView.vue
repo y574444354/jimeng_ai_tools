@@ -360,4 +360,53 @@ function formatTime(timeStr?: string): string {
 .v-time {
   color: var(--text-placeholder);
 }
+
+/* ======== 响应式 ======== */
+@media (max-width: 767px) {
+  .article-editor-view {
+    height: auto;
+    min-height: calc(100vh - var(--header-height) - 56px);
+  }
+  .editor-layout {
+    flex-direction: column;
+    height: auto;
+    border-radius: var(--radius-md);
+  }
+  .editor-left {
+    width: 100% !important;
+    border-right: none;
+    border-bottom: 1px solid var(--border-light);
+    max-height: 40vh;
+  }
+  .editor-center {
+    border-right: none;
+    min-height: 50vh;
+  }
+  .editor-right {
+    width: 100% !important;
+    border-top: 1px solid var(--border-light);
+    padding: 12px;
+  }
+  .editor-toolbar {
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 6px 8px;
+  }
+  .action-buttons {
+    gap: 6px;
+    padding-top: 6px;
+  }
+  .info-section {
+    gap: 4px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .editor-left {
+    width: 240px;
+  }
+  .editor-right {
+    width: 240px;
+  }
+}
 </style>

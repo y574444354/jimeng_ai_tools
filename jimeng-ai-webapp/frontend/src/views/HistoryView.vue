@@ -352,4 +352,104 @@ onMounted(() => {
 .history-item:hover .delete-btn {
   opacity: 1;
 }
+
+/* ======== 响应式 ======== */
+/* 移动端：列表项垂直布局，mete信息精简 */
+@media (max-width: 767px) {
+  /* 减少动画开销 */
+  .history-view {
+    animation: none;
+  }
+
+  /* 区块padding收缩 */
+  :deep(.page-section) {
+    padding: 16px;
+  }
+
+  /* 列表项改为垂直布局：缩略图在上，信息在下 */
+  .history-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    position: relative;
+  }
+
+  /* 缩略图变为全宽 */
+  .history-thumb {
+    width: 100%;
+    height: 160px;
+  }
+
+  /* 信息区域全宽 */
+  .history-info {
+    width: 100%;
+  }
+
+  /* 提示词文本显示两行 */
+  .hi-prompt {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 13px;
+  }
+
+  /* meta信息隐藏中间多余项目，只保留tag和状态 */
+  .hi-meta {
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    font-size: 11px;
+  }
+
+  /* 分隔符和部分信息项在移动端隐藏 */
+  .hi-meta .meta-sep {
+    display: none;
+  }
+
+  .hi-meta > span:nth-child(4) {
+    display: none;
+  }
+
+  /* 删除按钮固定右上角，始终显示 */
+  .history-actions {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+  }
+
+  .delete-btn {
+    opacity: 0.7;
+  }
+
+  /* 空状态padding缩小 */
+  .empty-state {
+    padding: 32px 0;
+  }
+
+  /* 分页器居中 */
+  .pagination-wrapper {
+    justify-content: center;
+    margin-top: 16px;
+  }
+}
+
+/* 平板端：适度间距 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  :deep(.page-section) {
+    padding: 20px;
+  }
+
+  /* 缩略图略大一些 */
+  .history-thumb {
+    width: 80px;
+    height: 80px;
+  }
+
+  /* meta信息适当缩小 */
+  .hi-meta {
+    font-size: 11px;
+  }
+}
 </style>
