@@ -15,11 +15,11 @@ export default defineConfig({
     allowedHosts: ['www.lsophia.cloud', 'lsophia.cloud'],
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8000',
+        target: 'http://127.0.0.1:8001',
         changeOrigin: true,
       },
       '/output': {
-        target: 'http://127.0.0.1:8000',
+        target: 'http://127.0.0.1:8001',
         changeOrigin: true,
       },
     },

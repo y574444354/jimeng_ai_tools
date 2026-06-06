@@ -168,9 +168,6 @@ watch(
 let apiStatusTimer: ReturnType<typeof setInterval> | null = null
 
 onMounted(async () => {
-  // 初始化 resize 监听
-  appStore.initResizeListener()
-
   // 如果还没有用户信息，则获取
   if (userStore.isLoggedIn && !userStore.userInfo) {
     await userStore.fetchUserInfo()
@@ -182,7 +179,6 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  appStore.destroyResizeListener()
   if (apiStatusTimer) {
     clearInterval(apiStatusTimer)
     apiStatusTimer = null

@@ -183,6 +183,18 @@ onMounted(async () => {
 .article-content :deep(strong) { font-weight: 600; }
 
 /* ======== 响应式 ======== */
+
+/* 平板端响应式 (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .article-content {
+    max-width: 100%;
+    font-size: 14px;
+  }
+  .title-actions {
+    flex-wrap: wrap;
+  }
+}
+
 @media (max-width: 767px) {
   .title-row {
     flex-direction: column;

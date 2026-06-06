@@ -326,6 +326,24 @@ onMounted(async () => {
 }
 
 /* ======== 响应式 ======== */
+
+/* 平板端响应式 (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .filter-bar {
+    gap: 8px;
+  }
+  .filter-bar > .el-input,
+  .filter-bar > .el-select {
+    width: 180px !important;
+  }
+  .article-table-wrapper {
+    overflow-x: auto;
+  }
+  .article-table-wrapper :deep(.el-table) {
+    min-width: 600px;
+  }
+}
+
 @media (max-width: 767px) {
   .filter-bar {
     flex-direction: column;

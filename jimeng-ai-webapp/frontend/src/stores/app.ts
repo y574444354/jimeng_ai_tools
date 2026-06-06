@@ -1,16 +1,21 @@
 import { defineStore } from 'pinia'
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed } from 'vue'
 import request from '@/api/request'
+import { BREAKPOINTS } from '@/utils/breakpoints'
 
 export const useAppStore = defineStore('app', () => {
   // 窗口宽度跟踪
   const windowWidth = ref(window.innerWidth)
 
-  // 是否为移动端 (< 768px)
-  const isMobile = computed(() => windowWidth.value < 768)
+  // 是否为移动端 (<= 767px) — 引用 BREAKPOINTS 常量
+  const isMobile = computed(() => windowWidth.value <= BREAKPOINTS.MOBILE)
 
-  // 是否为平板端 (768px - 1023px)
-  const isTablet = computed(() => windowWidth.value >= 768 && windowWidth.value < 1024)
+  // 是否为平板端 (768px - 1023px) — 引用 BREAKPOINTS 常量
+  const isTablet = computed(
+    () =>
+      windowWidth.value >= BREAKPOINTS.TABLET_MIN &&
+      windowWidth.value <= BREAKPOINTS.TABLET
+  )
 
   // 侧栏折叠状态（桌面端用户手动切换）
   const sidebarCollapsed = ref(false)

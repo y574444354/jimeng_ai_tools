@@ -71,7 +71,7 @@
   --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
 
   /* 布局 */
-  --sidebar-width: 232px;
+  --sidebar-width: 280px;
   --sidebar-collapsed: 68px;
   --header-height: 60px;
   --header-height-mobile: 52px;
@@ -83,6 +83,15 @@
 }
 
 /* ======== 响应式断点系统 ======== */
+/*
+ * 断点值与 src/utils/breakpoints.ts 保持同步：
+ *   BREAKPOINTS.MOBILE    = 767  →  @media (max-width: 767px)
+ *   BREAKPOINTS.TABLET_MIN = 768  →  @media (min-width: 768px)
+ *   BREAKPOINTS.TABLET     = 1023 →  @media (max-width: 1023px)
+ *   BREAKPOINTS.TABLET + 1 = 1024 →  @media (min-width: 1024px)
+ *
+ * 修改断点值时，必须同时更新 breakpoints.ts 和本文件。
+ */
 
 /* 平板端 (768px - 1023px)：侧边栏自动折叠 */
 @media (max-width: 1023px) {
@@ -91,7 +100,7 @@
   }
 }
 
-/* 移动端 (< 768px)：侧边栏隐藏，全宽布局 */
+/* 移动端 (<= 767px)：侧边栏隐藏，全宽布局 */
 @media (max-width: 767px) {
   :root {
     --sidebar-width: 0;
@@ -116,7 +125,7 @@ html {
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
     'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-primary);
   background: var(--bg-page);
   line-height: 1.6;
@@ -235,6 +244,17 @@ a {
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+/* ---- 减少动画偏好（无障碍） ---- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
@@ -506,7 +526,7 @@ a {
   .sidebar.sidebar-overlay-mode {
     transform: translateX(-100%);
     z-index: 200;
-    width: 260px;
+    width: 280px;
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
   }
 
@@ -536,12 +556,12 @@ a {
   display: none;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: none;
   background: transparent;
   cursor: pointer;
-  padding: 8px;
+  padding: 12px;
   margin-right: 8px;
   border-radius: var(--radius-sm);
   color: var(--text-primary);

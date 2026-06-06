@@ -316,6 +316,17 @@ onMounted(() => {
 }
 
 /* ======== 响应式 ======== */
+
+/* 平板端响应式 (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .record-item {
+    padding: 12px;
+  }
+  .record-platform {
+    flex-wrap: wrap;
+  }
+}
+
 @media (max-width: 767px) {
   .record-item {
     flex-direction: column;
